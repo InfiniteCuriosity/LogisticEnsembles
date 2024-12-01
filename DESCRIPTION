@@ -52,3 +52,5 @@ Suggests:
 VignetteBuilder: knitr
 Website: https://www.logisticensembles.com
 GitHub: https://github.com/InfiniteCuriosity/LogisticEnsembles
+URL: https://github.com/InfiniteCuriosity/LogisticEnsembles
+BugReports: https://github.com/InfiniteCuriosity/LogisticEnsembles/issues
