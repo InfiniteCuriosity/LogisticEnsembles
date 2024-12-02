@@ -1,4 +1,5 @@
 exportPattern("^[[:alpha:]]+")
+importFrom("adabag", "boosting")
 importFrom("arm", "bayesglm")
 importFrom("brnn", "brnn")
 importFrom("C50", "C5.0")

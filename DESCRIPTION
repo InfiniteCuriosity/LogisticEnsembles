@@ -7,6 +7,7 @@ Authors@R:
 Description: Automatically returns 36 logistic models including 23 individual models and 13 ensembles of models of logistic data. The package also returns 10 plots, 5 tables, and a summary report.
 License: MIT + file LICENSE
 Depends:
+    adabag,
     arm,
     brnn,
     C50,
@@ -51,6 +52,6 @@ Suggests:
     rmarkdown
 VignetteBuilder: knitr
 Website: https://www.logisticensembles.com
-GitHub: https://github.com/InfiniteCuriosity/LogisticEnsembles
+Github: https://github.com/InfiniteCuriosity/LogisticEnsembles
 URL: https://github.com/InfiniteCuriosity/LogisticEnsembles
 BugReports: https://github.com/InfiniteCuriosity/LogisticEnsembles/issues

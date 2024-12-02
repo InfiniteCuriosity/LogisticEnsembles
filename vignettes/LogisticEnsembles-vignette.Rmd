@@ -13,9 +13,7 @@ vignette: >
 
 **Lebron data is logistic, and will be our example.**
 
-The Lebron data set was originally posted at:
-
-<https://www.kaggle.com/datasets/dhavalrupapara/nba-2023-player-shot-dataset>
+The Lebron data set was originally posted at kaggle.com.
 
 It was filtered for Lebron, but others players are also in the data set.
 

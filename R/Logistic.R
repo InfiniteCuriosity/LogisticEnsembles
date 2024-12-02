@@ -57,6 +57,7 @@
 #'    test_amount = 0.20,
 #'    validation_amount = 0.20)
 #'
+#' @importFrom adabag bagging
 #' @importFrom arm bayesglm
 #' @importFrom brnn brnn
 #' @importFrom C50 C5.0
