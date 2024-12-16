@@ -147,11 +147,9 @@ Logistic(data = Lebron,
          validation_amount = 0.20)
 ```
 
-The 13 plots which are all produced automatically are:
+Here are a few of the 13 plots which are all produced automatically are:
 
 Accuracy by model and resample
-
-![Accuracy by model and resample <br>](Accuracy_by_model_and_resample.png){width="700"}
 
 Accuracy including train and holdout by model and resample
 
@@ -160,14 +158,6 @@ Accuracy including train and holdout by model and resample
 Boxplots of the numeric data
 
 ![Boxplots of the numeric data](Boxplots_of_the_numeric_data.png){width="700"}
-
-Correlation of the data by circle size and color
-
-![Correlation by circle size and color](Correlation_by_circle_and_color.png){width="700"}
-
-Correlation of the data by number and color
-
-![Correlation by number and color](Correlation_by_number_and_color.png){width="700"}
 
 Duration barchart
 
@@ -181,13 +171,6 @@ Over or underfitting barchart
 
 ![Over or underfitting barchart](Over_or_underfitting_barchart.png){width="700"}
 
-Overfitting by model and resample
-
-![Overfitting by model and resample](Overfitting_by_model_and_resample.png){width="700"}
-
-Pairwise scatterplots
-
-![Pairwise scatterplots and barcharts](Pairwise_scatterplots.png){width="700"}
 
 ROC curves
 
