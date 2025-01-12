@@ -171,7 +171,6 @@ Over or underfitting barchart
 
 ![Over or underfitting barchart](Over_or_underfitting_barchart.png){width="700"}
 
-
 ROC curves
 
 ![ROC curves](ROC_curves.png){width="700"}
