@@ -6,6 +6,7 @@
 #' @param save_all_trained_models "Y" or "N". Places all the trained models in the Environment
 #' @param how_to_handle_strings 0: No strings, 1: Factor values
 #' @param do_you_have_new_data "Y" or "N". If "Y", then you will be asked for the new data
+#' @param remove_VIF_greater_than Removes features with VIGF value above the given amount (default = 5.00)
 #' @param remove_ensemble_correlations_greater_than Enter a number to remove correlations in the ensembles
 #' @param use_parallel "Y" or "N" for parallel processing
 #' @param train_amount set the amount for the training data
@@ -13,12 +14,13 @@
 #' @param validation_amount Set the amount for the validation data
 
 #' @return a real number
-#' @export Logistic Automatically builds 36 logistic models (23 individual models and 13 ensembles of models)
+#' @export Logistic Automatically builds 36 binary models (23 individual models and 13 ensembles of models)
 
 #' @importFrom adabag bagging
 #' @importFrom arm bayesglm
 #' @importFrom brnn brnn
 #' @importFrom C50 C5.0
+#' @importFrom car vif
 #' @importFrom corrplot corrplot
 #' @importFrom Cubist cubist
 #' @importFrom doParallel registerDoParallel
@@ -47,7 +49,7 @@
 #' @importFrom readr cols
 #' @importFrom rpart rpart
 #' @importFrom scales percent
-#' @importFrom stats binomial cor predict reorder sd
+#' @importFrom stats binomial cor lm predict reorder sd
 #' @importFrom tidyr gather pivot_longer
 #' @importFrom tree tree
 #' @importFrom utils head read.csv str
@@ -56,7 +58,7 @@
 
 Logistic <- function(data, colnum, numresamples, save_all_trained_models = c("Y", "N"), how_to_handle_strings = c("0", "1"),
                      do_you_have_new_data = c("Y", "N"), remove_ensemble_correlations_greater_than, use_parallel = c("Y", "N"),
-                     train_amount, test_amount, validation_amount) {
+                     remove_VIF_greater_than, train_amount, test_amount, validation_amount) {
 
   use_parallel <- 0
   no_cores <- 0
@@ -77,6 +79,15 @@ Logistic <- function(data, colnum, numresamples, save_all_trained_models = c("Y"
                                   striped = TRUE, highlight = TRUE, resizable = TRUE
   )%>%
     reactablefmtr::add_title("Head of the data frame")
+
+
+  vif <- car::vif(stats::lm(y ~ ., data = df[, 1:ncol(df)]))
+  for (i in 1:ncol(df)) {
+    if(max(vif) > remove_VIF_greater_than){
+      df <- df %>% dplyr::select(-which.max(vif))
+      vif <- car::vif(stats::lm(y ~ ., data = df[, 1:ncol(df)]))
+    }
+  }
 
   if (how_to_handle_strings == 1) {
     df <- dplyr::mutate_if(df, is.character, as.factor)
@@ -1345,6 +1356,7 @@ Logistic <- function(data, colnum, numresamples, save_all_trained_models = c("Y"
   Accuracy_sd <- 0
   Overfitting_sd <- 0
   Duration_sd <- 0
+  remove_VIF_above <- 0
 
   #### Barchart of the data against y ####
   barchart <-df %>%
