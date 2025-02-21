@@ -11,6 +11,7 @@ Depends:
     arm,
     brnn,
     C50,
+    car,
     corrplot,
     Cubist,
     doParallel,
