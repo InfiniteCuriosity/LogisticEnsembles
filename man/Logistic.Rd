@@ -13,6 +13,7 @@ Logistic(
   do_you_have_new_data = c("Y", "N"),
   remove_ensemble_correlations_greater_than,
   use_parallel = c("Y", "N"),
+  remove_VIF_greater_than,
   train_amount,
   test_amount,
   validation_amount
@@ -34,6 +35,8 @@ Logistic(
 \item{remove_ensemble_correlations_greater_than}{Enter a number to remove correlations in the ensembles}
 
 \item{use_parallel}{"Y" or "N" for parallel processing}
+
+\item{remove_VIF_greater_than}{Removes features with VIGF value above the given amount (default = 5.00)}
 
 \item{train_amount}{set the amount for the training data}
 
