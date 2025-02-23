@@ -4,6 +4,7 @@
 #' @param colnum the column number with the logistic data
 #' @param numresamples the number of resamples
 #' @param save_all_trained_models "Y" or "N". Places all the trained models in the Environment
+#' @param save_all_plots Options to save all plots
 #' @param how_to_handle_strings 0: No strings, 1: Factor values
 #' @param do_you_have_new_data "Y" or "N". If "Y", then you will be asked for the new data
 #' @param remove_VIF_greater_than Removes features with VIGF value above the given amount (default = 5.00)
@@ -29,6 +30,7 @@
 #' @importFrom gam gam
 #' @importFrom gbm gbm
 #' @importFrom ggplot2 geom_boxplot geom_histogram ggplot facet_wrap labs theme_bw labs aes
+#' @importFrom ggplotify as.ggplot
 #' @importFrom graphics hist panel.smooth par rect
 #' @importFrom gridExtra grid.arrange
 #' @importFrom gt gt
@@ -56,9 +58,10 @@
 #' @importFrom xgboost xgb.DMatrix xgb.train
 
 
-Logistic <- function(data, colnum, numresamples, save_all_trained_models = c("Y", "N"), how_to_handle_strings = c("0", "1"),
-                     do_you_have_new_data = c("Y", "N"), remove_ensemble_correlations_greater_than, use_parallel = c("Y", "N"),
-                     remove_VIF_greater_than, train_amount, test_amount, validation_amount) {
+Logistic <- function(data, colnum, numresamples, remove_VIF_greater_than, remove_ensemble_correlations_greater_than,
+                     save_all_trained_models = c("Y", "N"), save_all_plots = c("Y", "N"), how_to_handle_strings = c("0", "1"),
+                     do_you_have_new_data = c("Y", "N"),  use_parallel = c("Y", "N"),
+                     train_amount, test_amount, validation_amount) {
 
   use_parallel <- 0
   no_cores <- 0
@@ -74,13 +77,6 @@ Logistic <- function(data, colnum, numresamples, save_all_trained_models = c("Y"
 
   df <- df[sample(1:nrow(df)), ] # randomizes the rows
 
-  head_df <- reactable::reactable(head(df),
-                                  searchable = TRUE, pagination = FALSE, wrap = TRUE, rownames = TRUE, fullWidth = TRUE, filterable = TRUE, bordered = TRUE,
-                                  striped = TRUE, highlight = TRUE, resizable = TRUE
-  )%>%
-    reactablefmtr::add_title("Head of the data frame")
-
-
   vif <- car::vif(stats::lm(y ~ ., data = df[, 1:ncol(df)]))
   for (i in 1:ncol(df)) {
     if(max(vif) > remove_VIF_greater_than){
@@ -88,6 +84,17 @@ Logistic <- function(data, colnum, numresamples, save_all_trained_models = c("Y"
       vif <- car::vif(stats::lm(y ~ ., data = df[, 1:ncol(df)]))
     }
   }
+
+  VIF_results <- reactable::reactable(as.data.frame(vif),
+                                      searchable = TRUE, pagination = FALSE, wrap = TRUE, rownames = TRUE, fullWidth = TRUE, filterable = TRUE, bordered = TRUE,
+                                      striped = TRUE, highlight = TRUE, resizable = TRUE
+  )%>%
+    reactablefmtr::add_title("Variance Inflation Factor (VIF)")
+
+  if(save_all_plots == "Y"){
+    reactablefmtr::save_reactable_test(VIF_results, "VIF_results.html")
+  }
+
 
   if (how_to_handle_strings == 1) {
     df <- dplyr::mutate_if(df, is.character, as.factor)
@@ -99,6 +106,25 @@ Logistic <- function(data, colnum, numresamples, save_all_trained_models = c("Y"
     newdata <- read.csv(newdata)
     colnames(newdata)[colnum] <- "y"
     newdata <- newdata %>% dplyr::relocate(y, .after = dplyr::last_col()) # Moves the target column to the last column on the right
+  }
+
+  if(save_all_plots == "Y"){
+    width = as.numeric(readline("Width of the graphics: "))
+    height = as.numeric(readline("Height of the graphics: "))
+    units = readline("Which units? You may use in, cm, mm or px. ")
+    scale = as.numeric(readline("What multiplicative scaling factor? "))
+    device = readline("Which device to use? You may enter eps, jpeg, pdf, png, svg or tiff: ")
+    dpi <- as.numeric(readline("Plot resolution. Applies only to raster output types (jpeg, png, tiff): "))
+  }
+
+  head_df <- reactable::reactable(head(df),
+                                  searchable = TRUE, pagination = FALSE, wrap = TRUE, rownames = TRUE, fullWidth = TRUE, filterable = TRUE, bordered = TRUE,
+                                  striped = TRUE, highlight = TRUE, resizable = TRUE
+  )%>%
+    reactablefmtr::add_title("Head of the data frame")
+
+  if(save_all_plots == "Y"){
+    reactablefmtr::save_reactable_test(head_df, "Head_of_data.html")
   }
 
   #### Initialize values to 0, in alphabetical order ####
@@ -1370,8 +1396,27 @@ Logistic <- function(data, colnum, numresamples, save_all_trained_models = c("Y"
     ggplot2::geom_text(aes(label = scales::percent(perc),
                            vjust = 1.5),
                        col = "white") +
+    ggplot2::labs(title = "Barchart of target (0 or 1) vs each feature of the numeric data") +
     ggplot2::facet_wrap(~ name, scales = "free") +
     ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0.1, 0.25)))
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("barchart.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("barchart.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("barchart.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("barchart.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("barchart.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("barchart.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
 
   #### Summary of the dataset ####
   data_summary <- reactable::reactable(round(as.data.frame(do.call(cbind, lapply(df, summary))), 4),
@@ -1379,6 +1424,9 @@ Logistic <- function(data, colnum, numresamples, save_all_trained_models = c("Y"
                                        striped = TRUE, highlight = TRUE, resizable = TRUE
   )%>%
     reactablefmtr::add_title("Data summary")
+  if(save_all_plots == "Y"){
+    reactablefmtr::save_reactable_test(data_summary, "Data_summary.html")
+  }
 
   #### Correlation plot of numeric data ####
   df1 <- df %>% purrr::keep(is.numeric)
@@ -1394,6 +1442,10 @@ Logistic <- function(data, colnum, numresamples, save_all_trained_models = c("Y"
   )%>%
     reactablefmtr::add_title("Correlation of the data")
 
+  if(save_all_plots == "Y"){
+    reactablefmtr::save_reactable_test(correlation_table, "Correlation_table.html")
+  }
+
   #### Boxplots of the numeric data ####
   boxplots <- df1 %>%
     tidyr::gather(key = "var", value = "value") %>%
@@ -1402,7 +1454,49 @@ Logistic <- function(data, colnum, numresamples, save_all_trained_models = c("Y"
     ggplot2::facet_wrap(~var, scales = "free") +
     ggplot2::theme_bw() +
     ggplot2::labs(title = "Boxplots of the numeric data")
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("boxplots.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("boxplots.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("boxplots.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("boxplots.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("boxplots.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("boxplots.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
   # Thanks to https://rstudio-pubs-static_s3_amazonaws_com/388596_e21196f1adf04e0ea7cd68edd9eba966_html
+
+  histograms <- ggplot2::ggplot(tidyr::gather(df1, cols, value), aes(x = value)) +
+    ggplot2::geom_histogram(bins = round(nrow(df1) / 10)) +
+    ggplot2::facet_wrap(. ~ cols, scales = "free") +
+    ggplot2::labs(title = "Histograms of each numeric column. Each bar = 10 rows of data")
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("histograms.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("histograms.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("histograms.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("histograms.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("histograms.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("histograms.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+
 
   # Break into train, test and validation sets
 
@@ -3499,12 +3593,19 @@ Logistic <- function(data, colnum, numresamples, save_all_trained_models = c("Y"
                                           striped = TRUE, highlight = TRUE, resizable = TRUE
     )%>%
       reactablefmtr::add_title("Head of the ensemble")
+    if(save_all_plots == "Y"){
+      reactablefmtr::save_reactable_test(head_ensemble, "Head_of_the_ensemble.html")
+    }
 
     ensemble_correlation <- reactable::reactable(round(cor(ensemble1), 4),
                                                  searchable = TRUE, pagination = FALSE, wrap = TRUE, rownames = TRUE, fullWidth = TRUE, filterable = TRUE, bordered = TRUE,
                                                  striped = TRUE, highlight = TRUE, resizable = TRUE
     )%>%
       reactablefmtr::add_title("Correlation of the ensemble")
+
+    if(save_all_plots == "Y"){
+      reactablefmtr::save_reactable_test(ensemble_correlation, "Correlation_of_the_ensemble.html")
+    }
 
     ensemble_index <- sample(c(1:3), nrow(ensemble1), replace = TRUE, prob = c(train_amount, test_amount, validation_amount))
     ensemble_train <- ensemble1[ensemble_index == 1, ]
@@ -4938,7 +5039,26 @@ Logistic <- function(data, colnum, numresamples, save_all_trained_models = c("Y"
                                         ncol = 6
   )
 
+  ROC_curves <- ggplotify::as.ggplot(ROC_curves)
 
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("ROC_curves.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("ROC_curves.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("ROC_curves.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("ROC_curves.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("ROC_curves.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("ROC_curves.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
 
 
   holdout_results <- data.frame(
@@ -5131,6 +5251,10 @@ Logistic <- function(data, colnum, numresamples, save_all_trained_models = c("Y"
   ) %>%
     reactablefmtr::add_title("Mean of Holdout results")
 
+  if(save_all_plots == "Y"){
+    reactablefmtr::save_reactable_test(holdout_results_final, "Summary_report.html")
+  }
+
 
   accuracy_data <- data.frame(
     "count" = 1:numresamples,
@@ -5195,10 +5319,58 @@ Logistic <- function(data, colnum, numresamples, save_all_trained_models = c("Y"
     ggplot2::geom_point(mapping = aes(x = count, y = data)) +
     ggplot2::geom_hline(aes(yintercept = mean), linewidth = 1.25) +
     ggplot2::geom_hline(aes(yintercept = 1, color = "red")) +
-    ggplot2::facet_wrap(~model, ncol = 6) +
-    ggplot2::ggtitle("Accuracy by model, higher is better. \n The black horizontal line is the mean of the results, the red horizontal line is 1.") +
-    ggplot2::labs(y = "Accuracy by model, higher is better \n The horizontal line is the mean of the results, the red line is 1.") +
+    ggplot2::facet_wrap(~model, ncol = 6, scales = "fixed") +
+    ggplot2::ggtitle("Accuracy by model fixed scales, higher is better. \n The black horizontal line is the mean of the results, the red horizontal line is 1.") +
+    ggplot2::labs(y = "Accuracy by model fixed scales, higher is better \n The black horizontal line is the mean of the results, the red line is 1.") +
     ggplot2::theme(legend.position = "none")
+
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("accuracy_plot.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("accuracy_plot.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("accuracy_plot.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("accuracy_plot.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("accuracy_plot.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("accuracy_plot.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+
+  accuracy_plot2 <- ggplot2::ggplot(data = accuracy_data, mapping = ggplot2::aes(x = count, y = data, color = model)) +
+    ggplot2::geom_line(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_point(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_hline(aes(yintercept = mean), linewidth = 1.25) +
+    ggplot2::geom_hline(aes(yintercept = 1, color = "red")) +
+    ggplot2::facet_wrap(~model, ncol = 6, scales = "free") +
+    ggplot2::ggtitle("Accuracy by model free scales, higher is better. \n The black horizontal line is the mean of the results, the red horizontal line is 1.") +
+    ggplot2::labs(y = "Accuracy by model free scales, higher is better \n The black horizontal line is the mean of the results, the red line is 1.") +
+    ggplot2::theme(legend.position = "none")
+
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("accuracy_plot2.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("accuracy_plot2.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("accuracy_plot2.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("accuracy_plot2.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("accuracy_plot2.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("accuracy_plot2.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
 
   total_accuracy_data <- data.frame(
     "count" = 1:numresamples,
@@ -5263,9 +5435,9 @@ Logistic <- function(data, colnum, numresamples, save_all_trained_models = c("Y"
     ggplot2::geom_point(mapping = aes(x = count, y = train)) +
     ggplot2::geom_line(mapping = aes(x = count, y = holdout, color = "holdout")) +
     ggplot2::geom_point(mapping = aes(x = count, y = holdout)) +
-    ggplot2::facet_wrap(~model, ncol = 6) +
-    ggplot2::ggtitle("Accuracy data including train and holdout results, by model and resample. The best result is 1.0") +
-    ggplot2::labs(y = "Accuracy, the best result is 1.0") +
+    ggplot2::facet_wrap(~model, ncol = 6, scales = "fixed") +
+    ggplot2::ggtitle("Accuracy data including train and holdout results, by model and resample. The best possible result is 1.0") +
+    ggplot2::labs(y = "Accuracy, the best possible result is 1.0") +
     ggplot2::scale_color_manual(
       name = "Total Results",
       breaks = c("train", "holdout"),
@@ -5273,6 +5445,873 @@ Logistic <- function(data, colnum, numresamples, save_all_trained_models = c("Y"
         "train" = "red", "holdout" = "black"
       )
     )
+
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("total_plot.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("total_plot.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("total_plot.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("total_plot.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("total_plot.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("total_plot.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+
+  total_plot2 <- ggplot2::ggplot(data = total_accuracy_data, mapping = ggplot2::aes(x = count, y = data, color = model)) +
+    ggplot2::geom_line(mapping = aes(x = count, y = train, color = "train")) +
+    ggplot2::geom_point(mapping = aes(x = count, y = train)) +
+    ggplot2::geom_line(mapping = aes(x = count, y = holdout, color = "holdout")) +
+    ggplot2::geom_point(mapping = aes(x = count, y = holdout)) +
+    ggplot2::facet_wrap(~model, ncol = 6, scales = "free") +
+    ggplot2::ggtitle("Accuracy data including train and holdout results, by model and resample. The best possible result is 1.0") +
+    ggplot2::labs(y = "Accuracy, the best possible result is 1.0") +
+    ggplot2::scale_color_manual(
+      name = "Total Results",
+      breaks = c("train", "holdout"),
+      values = c(
+        "train" = "red", "holdout" = "black"
+      )
+    )
+
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("total_plot2.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("total_plot2.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("total_plot2.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("total_plot2.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("total_plot2.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("total_plot2.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+
+  true_positive_rate_data <- data.frame(
+    "count" = 1:numresamples,
+    "model" = c(
+      rep("Bagged Random Forest", numresamples), rep("Bagging", numresamples),
+      rep("BayesGLM", numresamples),rep("C50", numresamples),
+      rep("Cubist", numresamples), rep("Flexible Discriminant Analysis", numresamples), rep("Generalized Additive Models", numresamples),
+      rep("Generalized Linear Models", numresamples), rep("Gradient Boosted", numresamples), rep("Linear", numresamples),
+      rep("Linear Discrmininant Analysis", numresamples), rep("Mixture Discriminant Analysis", numresamples), rep("Naive Bayes", numresamples),
+      rep("Penalized Discrmininant Analysis", numresamples), rep("Quadratic Discrmininant Analysis", numresamples),
+      rep("Random Forest", numresamples), rep("Ranger", numresamples),
+      rep("RPart", numresamples), rep("Support Vector Machines", numresamples),
+      rep("Trees", numresamples), rep("XGBoost", numresamples),
+      rep("Ensemble Bagging", numresamples),
+      rep("Ensemble C50", numresamples), rep("Ensemble Gradient Boosted", numresamples),
+      rep("Ensemble Partial Least Squares", numresamples),
+      rep("Ensemble Penalized Discrmininant Analysis", numresamples), rep("Ensemble Random Forest", numresamples),
+      rep("Ensemble Ranger", numresamples), rep("Ensemble Regularized Discriminant Analysis", numresamples),
+      rep("Ensemble RPart", numresamples), rep("Ensemble Support Vector Machines", numresamples),
+      rep("Ensemble Trees", numresamples), rep("Ensemble XGBoost", numresamples)
+    ),
+    "data" = c(
+      bag_rf_holdout_true_positive_rate, bagging_holdout_true_positive_rate,
+      bayesglm_holdout_true_positive_rate, C50_holdout_true_positive_rate,
+      cubist_holdout_true_positive_rate, fda_holdout_true_positive_rate, gam_holdout_true_positive_rate,
+      glm_holdout_true_positive_rate, gb_holdout_true_positive_rate,
+      linear_holdout_true_positive_rate, lda_holdout_true_positive_rate, mda_holdout_true_positive_rate,
+      n_bayes_holdout_true_positive_rate, pda_holdout_true_positive_rate,
+      qda_holdout_true_positive_rate, rf_holdout_true_positive_rate, ranger_holdout_true_positive_rate,
+      rpart_holdout_true_positive_rate, svm_holdout_true_positive_rate,
+      tree_holdout_true_positive_rate, svm_holdout_true_positive_rate,
+      ensemble_bagging_holdout_true_positive_rate,
+      ensemble_C50_holdout_true_positive_rate, ensemble_gb_holdout_true_positive_rate,
+      ensemble_pls_holdout_true_positive_rate,
+      ensemble_pda_holdout_true_positive_rate, ensemble_rf_holdout_true_positive_rate,
+      ensemble_ranger_holdout_true_positive_rate, ensemble_rda_holdout_true_positive_rate,
+      ensemble_rpart_holdout_true_positive_rate, ensemble_svm_holdout_true_positive_rate,
+      ensemble_tree_holdout_true_positive_rate, ensemble_xgb_holdout_true_positive_rate
+    ),
+    "mean" = rep(c(
+      bag_rf_holdout_true_positive_rate_mean, bagging_holdout_true_positive_rate_mean,
+      bayesglm_holdout_true_positive_rate_mean, C50_holdout_true_positive_rate_mean,
+      cubist_holdout_true_positive_rate_mean, fda_holdout_true_positive_rate_mean, gam_holdout_true_positive_rate_mean,
+      glm_holdout_true_positive_rate_mean, gb_holdout_true_positive_rate_mean,
+      linear_holdout_true_positive_rate_mean, lda_holdout_true_positive_rate_mean, mda_holdout_true_positive_rate_mean,
+      n_bayes_holdout_true_positive_rate_mean, pda_holdout_true_positive_rate_mean,
+      qda_holdout_true_positive_rate_mean, rf_holdout_true_positive_rate_mean, ranger_holdout_true_positive_rate_mean,
+      rpart_holdout_true_positive_rate_mean, svm_holdout_true_positive_rate_mean,
+      tree_holdout_true_positive_rate_mean, svm_holdout_true_positive_rate_mean,
+      ensemble_bagging_holdout_true_positive_rate_mean,
+      ensemble_C50_holdout_true_positive_rate_mean, ensemble_gb_holdout_true_positive_rate_mean,
+      ensemble_pls_holdout_true_positive_rate_mean,
+      ensemble_pda_holdout_true_positive_rate_mean, ensemble_rf_holdout_true_positive_rate_mean,
+      ensemble_ranger_holdout_true_positive_rate_mean, ensemble_rda_holdout_true_positive_rate_mean,
+      ensemble_rpart_holdout_true_positive_rate_mean, ensemble_svm_holdout_true_positive_rate_mean,
+      ensemble_tree_holdout_true_positive_rate_mean, ensemble_xgb_holdout_true_positive_rate_mean
+    ), each = numresamples)
+  )
+
+  true_positive_rate_plot <- ggplot2::ggplot(data = true_positive_rate_data, mapping = ggplot2::aes(x = count, y = data, color = model)) +
+    ggplot2::geom_line(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_point(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_hline(aes(yintercept = mean), linewidth = 1.25) +
+    ggplot2::geom_hline(aes(yintercept = 1, color = "red")) +
+    ggplot2::facet_wrap(~model, ncol = 6, scales = "fixed") +
+    ggplot2::ggtitle("True Positive Rate by model fixed scales, higher is better. \n The black horizontal line is the mean of the results, the red horizontal line is 1.") +
+    ggplot2::labs(y = "True Positive Rate by model fixed scales, higher is better \n The horizontal line is the mean of the results, the red line is 1.") +
+    ggplot2::theme(legend.position = "none")
+
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("true_positive_rate_plot.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("true_positive_rate_plot.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("true_positive_rate_plot.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("true_positive_rate_plot.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("true_positive_rate_plot.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("true_positive_rate_plot.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+
+  true_positive_rate_plot2 <- ggplot2::ggplot(data = true_positive_rate_data, mapping = ggplot2::aes(x = count, y = data, color = model)) +
+    ggplot2::geom_line(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_point(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_hline(aes(yintercept = mean), linewidth = 1.25) +
+    ggplot2::geom_hline(aes(yintercept = 1, color = "red")) +
+    ggplot2::facet_wrap(~model, ncol = 6, scales = "free") +
+    ggplot2::ggtitle("True positive rate by model free scales, higher is better. \n The black horizontal line is the mean of the results, the red horizontal line is 1.") +
+    ggplot2::labs(y = "True positive rate by model free scales, higher is better \n The horizontal line is the mean of the results, the red line is 1.") +
+    ggplot2::theme(legend.position = "none")
+
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("true_positive_rate_plot2.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("true_positive_rate_plot2.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("true_positive_rate_plot2.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("true_positive_rate_plot2.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("true_positive_rate_plot2.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("true_positive_rate_plot2.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+
+  true_negative_rate_data <- data.frame(
+    "count" = 1:numresamples,
+    "model" = c(
+      rep("Bagged Random Forest", numresamples), rep("Bagging", numresamples),
+      rep("BayesGLM", numresamples),rep("C50", numresamples),
+      rep("Cubist", numresamples), rep("Flexible Discriminant Analysis", numresamples), rep("Generalized Additive Models", numresamples),
+      rep("Generalized Linear Models", numresamples), rep("Gradient Boosted", numresamples), rep("Linear", numresamples),
+      rep("Linear Discrmininant Analysis", numresamples), rep("Mixture Discriminant Analysis", numresamples), rep("Naive Bayes", numresamples),
+      rep("Penalized Discrmininant Analysis", numresamples), rep("Quadratic Discrmininant Analysis", numresamples),
+      rep("Random Forest", numresamples), rep("Ranger", numresamples),
+      rep("RPart", numresamples), rep("Support Vector Machines", numresamples),
+      rep("Trees", numresamples), rep("XGBoost", numresamples),
+      rep("Ensemble Bagging", numresamples),
+      rep("Ensemble C50", numresamples), rep("Ensemble Gradient Boosted", numresamples),
+      rep("Ensemble Partial Least Squares", numresamples),
+      rep("Ensemble Penalized Discrmininant Analysis", numresamples), rep("Ensemble Random Forest", numresamples),
+      rep("Ensemble Ranger", numresamples), rep("Ensemble Regularized Discriminant Analysis", numresamples),
+      rep("Ensemble RPart", numresamples), rep("Ensemble Support Vector Machines", numresamples),
+      rep("Ensemble Trees", numresamples), rep("Ensemble XGBoost", numresamples)
+    ),
+    "data" = c(
+      bag_rf_holdout_true_negative_rate, bagging_holdout_true_negative_rate,
+      bayesglm_holdout_true_negative_rate, C50_holdout_true_negative_rate,
+      cubist_holdout_true_negative_rate, fda_holdout_true_negative_rate, gam_holdout_true_negative_rate,
+      glm_holdout_true_negative_rate, gb_holdout_true_negative_rate,
+      linear_holdout_true_negative_rate, lda_holdout_true_negative_rate, mda_holdout_true_negative_rate,
+      n_bayes_holdout_true_negative_rate, pda_holdout_true_negative_rate,
+      qda_holdout_true_negative_rate, rf_holdout_true_negative_rate, ranger_holdout_true_negative_rate,
+      rpart_holdout_true_negative_rate, svm_holdout_true_negative_rate,
+      tree_holdout_true_negative_rate, svm_holdout_true_negative_rate,
+      ensemble_bagging_holdout_true_negative_rate,
+      ensemble_C50_holdout_true_negative_rate, ensemble_gb_holdout_true_negative_rate,
+      ensemble_pls_holdout_true_negative_rate,
+      ensemble_pda_holdout_true_negative_rate, ensemble_rf_holdout_true_negative_rate,
+      ensemble_ranger_holdout_true_negative_rate, ensemble_rda_holdout_true_negative_rate,
+      ensemble_rpart_holdout_true_negative_rate, ensemble_svm_holdout_true_negative_rate,
+      ensemble_tree_holdout_true_negative_rate, ensemble_xgb_holdout_true_negative_rate
+    ),
+    "mean" = rep(c(
+      bag_rf_holdout_true_negative_rate_mean, bagging_holdout_true_negative_rate_mean,
+      bayesglm_holdout_true_negative_rate_mean, C50_holdout_true_negative_rate_mean,
+      cubist_holdout_true_negative_rate_mean, fda_holdout_true_negative_rate_mean, gam_holdout_true_negative_rate_mean,
+      glm_holdout_true_negative_rate_mean, gb_holdout_true_negative_rate_mean,
+      linear_holdout_true_negative_rate_mean, lda_holdout_true_negative_rate_mean, mda_holdout_true_negative_rate_mean,
+      n_bayes_holdout_true_negative_rate_mean, pda_holdout_true_negative_rate_mean,
+      qda_holdout_true_negative_rate_mean, rf_holdout_true_negative_rate_mean, ranger_holdout_true_negative_rate_mean,
+      rpart_holdout_true_negative_rate_mean, svm_holdout_true_negative_rate_mean,
+      tree_holdout_true_negative_rate_mean, svm_holdout_true_negative_rate_mean,
+      ensemble_bagging_holdout_true_negative_rate_mean,
+      ensemble_C50_holdout_true_negative_rate_mean, ensemble_gb_holdout_true_negative_rate_mean,
+      ensemble_pls_holdout_true_negative_rate_mean,
+      ensemble_pda_holdout_true_negative_rate_mean, ensemble_rf_holdout_true_negative_rate_mean,
+      ensemble_ranger_holdout_true_negative_rate_mean, ensemble_rda_holdout_true_negative_rate_mean,
+      ensemble_rpart_holdout_true_negative_rate_mean, ensemble_svm_holdout_true_negative_rate_mean,
+      ensemble_tree_holdout_true_negative_rate_mean, ensemble_xgb_holdout_true_negative_rate_mean
+    ), each = numresamples)
+  )
+
+  true_negative_rate_plot <- ggplot2::ggplot(data = true_negative_rate_data, mapping = ggplot2::aes(x = count, y = data, color = model)) +
+    ggplot2::geom_line(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_point(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_hline(aes(yintercept = mean), linewidth = 1.25) +
+    ggplot2::geom_hline(aes(yintercept = 1, color = "red")) +
+    ggplot2::facet_wrap(~model, ncol = 6, scales = "fixed") +
+    ggplot2::ggtitle("True negative rate by model fixed scales, higher is better. \n The black horizontal line is the mean of the results, the red horizontal line is 1.") +
+    ggplot2::labs(y = "True negative rate by model fixed scales, higher is better \n The horizontal line is the mean of the results, the red line is 1.") +
+    ggplot2::theme(legend.position = "none")
+
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("true_negative_rate_plot.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("true_negative_rate_plot.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("true_negative_rate_plot.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("true_negative_rate_plot.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("true_negative_rate_plot.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("true_negative_rate_plot.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+
+  true_negative_rate_plot2 <- ggplot2::ggplot(data = true_negative_rate_data, mapping = ggplot2::aes(x = count, y = data, color = model)) +
+    ggplot2::geom_line(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_point(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_hline(aes(yintercept = mean), linewidth = 1.25) +
+    ggplot2::geom_hline(aes(yintercept = 1, color = "red")) +
+    ggplot2::facet_wrap(~model, ncol = 6, scales = "free") +
+    ggplot2::ggtitle("True negative rate by model free scales, higher is better. \n The black horizontal line is the mean of the results, the red horizontal line is 1.") +
+    ggplot2::labs(y = "True negative rate by model free scales, higher is better \n The horizontal line is the mean of the results, the red line is 1.") +
+    ggplot2::theme(legend.position = "none")
+
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("true_negative_rate_plot2.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("true_negative_rate_plot2.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("true_negative_rate_plot2.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("true_negative_rate_plot2.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("true_negative_rate_plot2.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("true_negative_rate_plot2.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+
+  false_positive_rate_data <- data.frame(
+    "count" = 1:numresamples,
+    "model" = c(
+      rep("Bagged Random Forest", numresamples), rep("Bagging", numresamples),
+      rep("BayesGLM", numresamples),rep("C50", numresamples),
+      rep("Cubist", numresamples), rep("Flexible Discriminant Analysis", numresamples), rep("Generalized Additive Models", numresamples),
+      rep("Generalized Linear Models", numresamples), rep("Gradient Boosted", numresamples), rep("Linear", numresamples),
+      rep("Linear Discrmininant Analysis", numresamples), rep("Mixture Discriminant Analysis", numresamples), rep("Naive Bayes", numresamples),
+      rep("Penalized Discrmininant Analysis", numresamples), rep("Quadratic Discrmininant Analysis", numresamples),
+      rep("Random Forest", numresamples), rep("Ranger", numresamples),
+      rep("RPart", numresamples), rep("Support Vector Machines", numresamples),
+      rep("Trees", numresamples), rep("XGBoost", numresamples),
+      rep("Ensemble Bagging", numresamples),
+      rep("Ensemble C50", numresamples), rep("Ensemble Gradient Boosted", numresamples),
+      rep("Ensemble Partial Least Squares", numresamples),
+      rep("Ensemble Penalized Discrmininant Analysis", numresamples), rep("Ensemble Random Forest", numresamples),
+      rep("Ensemble Ranger", numresamples), rep("Ensemble Regularized Discriminant Analysis", numresamples),
+      rep("Ensemble RPart", numresamples), rep("Ensemble Support Vector Machines", numresamples),
+      rep("Ensemble Trees", numresamples), rep("Ensemble XGBoost", numresamples)
+    ),
+    "data" = c(
+      bag_rf_holdout_false_positive_rate, bagging_holdout_false_positive_rate,
+      bayesglm_holdout_false_positive_rate, C50_holdout_false_positive_rate,
+      cubist_holdout_false_positive_rate, fda_holdout_false_positive_rate, gam_holdout_false_positive_rate,
+      glm_holdout_false_positive_rate, gb_holdout_false_positive_rate,
+      linear_holdout_false_positive_rate, lda_holdout_false_positive_rate, mda_holdout_false_positive_rate,
+      n_bayes_holdout_false_positive_rate, pda_holdout_false_positive_rate,
+      qda_holdout_false_positive_rate, rf_holdout_false_positive_rate, ranger_holdout_false_positive_rate,
+      rpart_holdout_false_positive_rate, svm_holdout_false_positive_rate,
+      tree_holdout_false_positive_rate, svm_holdout_false_positive_rate,
+      ensemble_bagging_holdout_false_positive_rate,
+      ensemble_C50_holdout_false_positive_rate, ensemble_gb_holdout_false_positive_rate,
+      ensemble_pls_holdout_false_positive_rate,
+      ensemble_pda_holdout_false_positive_rate, ensemble_rf_holdout_false_positive_rate,
+      ensemble_ranger_holdout_false_positive_rate, ensemble_rda_holdout_false_positive_rate,
+      ensemble_rpart_holdout_false_positive_rate, ensemble_svm_holdout_false_positive_rate,
+      ensemble_tree_holdout_false_positive_rate, ensemble_xgb_holdout_false_positive_rate
+    ),
+    "mean" = rep(c(
+      bag_rf_holdout_false_positive_rate_mean, bagging_holdout_false_positive_rate_mean,
+      bayesglm_holdout_false_positive_rate_mean, C50_holdout_false_positive_rate_mean,
+      cubist_holdout_false_positive_rate_mean, fda_holdout_false_positive_rate_mean, gam_holdout_false_positive_rate_mean,
+      glm_holdout_false_positive_rate_mean, gb_holdout_false_positive_rate_mean,
+      linear_holdout_false_positive_rate_mean, lda_holdout_false_positive_rate_mean, mda_holdout_false_positive_rate_mean,
+      n_bayes_holdout_false_positive_rate_mean, pda_holdout_false_positive_rate_mean,
+      qda_holdout_false_positive_rate_mean, rf_holdout_false_positive_rate_mean, ranger_holdout_false_positive_rate_mean,
+      rpart_holdout_false_positive_rate_mean, svm_holdout_false_positive_rate_mean,
+      tree_holdout_false_positive_rate_mean, svm_holdout_false_positive_rate_mean,
+      ensemble_bagging_holdout_false_positive_rate_mean,
+      ensemble_C50_holdout_false_positive_rate_mean, ensemble_gb_holdout_false_positive_rate_mean,
+      ensemble_pls_holdout_false_positive_rate_mean,
+      ensemble_pda_holdout_false_positive_rate_mean, ensemble_rf_holdout_false_positive_rate_mean,
+      ensemble_ranger_holdout_false_positive_rate_mean, ensemble_rda_holdout_false_positive_rate_mean,
+      ensemble_rpart_holdout_false_positive_rate_mean, ensemble_svm_holdout_false_positive_rate_mean,
+      ensemble_tree_holdout_false_positive_rate_mean, ensemble_xgb_holdout_false_positive_rate_mean
+    ), each = numresamples)
+  )
+
+  false_positive_rate_plot <- ggplot2::ggplot(data = false_positive_rate_data, mapping = ggplot2::aes(x = count, y = data, color = model)) +
+    ggplot2::geom_line(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_point(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_hline(aes(yintercept = mean), linewidth = 1.25) +
+    ggplot2::geom_hline(aes(yintercept = 0, color = "red")) +
+    ggplot2::facet_wrap(~model, ncol = 6, scales = "fixed") +
+    ggplot2::ggtitle("False positive rate by model fixed scales, lower is better. \n The black horizontal line is the mean of the results, the red horizontal line is 0.") +
+    ggplot2::labs(y = "False positive rate by model fixed scales, lower is better \n The horizontal line is the mean of the results, the red line is 0.") +
+    ggplot2::theme(legend.position = "none")
+
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("false_positive_rate_plot.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("false_positive_rate_plot.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("false_positive_rate_plot.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("false_positive_rate_plot.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("false_positive_rate_plot.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("false_positive_rate_plot.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+
+  false_positive_rate_plot2 <- ggplot2::ggplot(data = false_positive_rate_data, mapping = ggplot2::aes(x = count, y = data, color = model)) +
+    ggplot2::geom_line(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_point(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_hline(aes(yintercept = mean), linewidth = 1.25) +
+    ggplot2::geom_hline(aes(yintercept = 0, color = "red")) +
+    ggplot2::facet_wrap(~model, ncol = 6, scales = "free") +
+    ggplot2::ggtitle("False positive rate by model free scales, lower is better. \n The black horizontal line is the mean of the results, the red horizontal line is 0.") +
+    ggplot2::labs(y = "False positive rate by model free scales, lower is better \n The horizontal line is the mean of the results, the red line is 0.") +
+    ggplot2::theme(legend.position = "none")
+
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("false_positive_rate_plot2.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("false_positive_rate_plot2.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("false_positive_rate_plot2.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("false_positive_rate_plot2.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("false_positive_rate_plot2.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("false_positive_rate_plot2.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+
+
+  false_negative_rate_data <- data.frame(
+    "count" = 1:numresamples,
+    "model" = c(
+      rep("Bagged Random Forest", numresamples), rep("Bagging", numresamples),
+      rep("BayesGLM", numresamples),rep("C50", numresamples),
+      rep("Cubist", numresamples), rep("Flexible Discriminant Analysis", numresamples), rep("Generalized Additive Models", numresamples),
+      rep("Generalized Linear Models", numresamples), rep("Gradient Boosted", numresamples), rep("Linear", numresamples),
+      rep("Linear Discrmininant Analysis", numresamples), rep("Mixture Discriminant Analysis", numresamples), rep("Naive Bayes", numresamples),
+      rep("Penalized Discrmininant Analysis", numresamples), rep("Quadratic Discrmininant Analysis", numresamples),
+      rep("Random Forest", numresamples), rep("Ranger", numresamples),
+      rep("RPart", numresamples), rep("Support Vector Machines", numresamples),
+      rep("Trees", numresamples), rep("XGBoost", numresamples),
+      rep("Ensemble Bagging", numresamples),
+      rep("Ensemble C50", numresamples), rep("Ensemble Gradient Boosted", numresamples),
+      rep("Ensemble Partial Least Squares", numresamples),
+      rep("Ensemble Penalized Discrmininant Analysis", numresamples), rep("Ensemble Random Forest", numresamples),
+      rep("Ensemble Ranger", numresamples), rep("Ensemble Regularized Discriminant Analysis", numresamples),
+      rep("Ensemble RPart", numresamples), rep("Ensemble Support Vector Machines", numresamples),
+      rep("Ensemble Trees", numresamples), rep("Ensemble XGBoost", numresamples)
+    ),
+    "data" = c(
+      bag_rf_holdout_false_negative_rate, bagging_holdout_false_negative_rate,
+      bayesglm_holdout_false_negative_rate, C50_holdout_false_negative_rate,
+      cubist_holdout_false_negative_rate, fda_holdout_false_negative_rate, gam_holdout_false_negative_rate,
+      glm_holdout_false_negative_rate, gb_holdout_false_negative_rate,
+      linear_holdout_false_negative_rate, lda_holdout_false_negative_rate, mda_holdout_false_negative_rate,
+      n_bayes_holdout_false_negative_rate, pda_holdout_false_negative_rate,
+      qda_holdout_false_negative_rate, rf_holdout_false_negative_rate, ranger_holdout_false_negative_rate,
+      rpart_holdout_false_negative_rate, svm_holdout_false_negative_rate,
+      tree_holdout_false_negative_rate, svm_holdout_false_negative_rate,
+      ensemble_bagging_holdout_false_negative_rate,
+      ensemble_C50_holdout_false_negative_rate, ensemble_gb_holdout_false_negative_rate,
+      ensemble_pls_holdout_false_negative_rate,
+      ensemble_pda_holdout_false_negative_rate, ensemble_rf_holdout_false_negative_rate,
+      ensemble_ranger_holdout_false_negative_rate, ensemble_rda_holdout_false_negative_rate,
+      ensemble_rpart_holdout_false_negative_rate, ensemble_svm_holdout_false_negative_rate,
+      ensemble_tree_holdout_false_negative_rate, ensemble_xgb_holdout_false_negative_rate
+    ),
+    "mean" = rep(c(
+      bag_rf_holdout_false_negative_rate_mean, bagging_holdout_false_negative_rate_mean,
+      bayesglm_holdout_false_negative_rate_mean, C50_holdout_false_negative_rate_mean,
+      cubist_holdout_false_negative_rate_mean, fda_holdout_false_negative_rate_mean, gam_holdout_false_negative_rate_mean,
+      glm_holdout_false_negative_rate_mean, gb_holdout_false_negative_rate_mean,
+      linear_holdout_false_negative_rate_mean, lda_holdout_false_negative_rate_mean, mda_holdout_false_negative_rate_mean,
+      n_bayes_holdout_false_negative_rate_mean, pda_holdout_false_negative_rate_mean,
+      qda_holdout_false_negative_rate_mean, rf_holdout_false_negative_rate_mean, ranger_holdout_false_negative_rate_mean,
+      rpart_holdout_false_negative_rate_mean, svm_holdout_false_negative_rate_mean,
+      tree_holdout_false_negative_rate_mean, svm_holdout_false_negative_rate_mean,
+      ensemble_bagging_holdout_false_negative_rate_mean,
+      ensemble_C50_holdout_false_negative_rate_mean, ensemble_gb_holdout_false_negative_rate_mean,
+      ensemble_pls_holdout_false_negative_rate_mean,
+      ensemble_pda_holdout_false_negative_rate_mean, ensemble_rf_holdout_false_negative_rate_mean,
+      ensemble_ranger_holdout_false_negative_rate_mean, ensemble_rda_holdout_false_negative_rate_mean,
+      ensemble_rpart_holdout_false_negative_rate_mean, ensemble_svm_holdout_false_negative_rate_mean,
+      ensemble_tree_holdout_false_negative_rate_mean, ensemble_xgb_holdout_false_negative_rate_mean
+    ), each = numresamples)
+  )
+
+  false_negative_rate_plot <- ggplot2::ggplot(data = false_negative_rate_data, mapping = ggplot2::aes(x = count, y = data, color = model)) +
+    ggplot2::geom_line(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_point(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_hline(aes(yintercept = mean), linewidth = 1.25) +
+    ggplot2::geom_hline(aes(yintercept = 0, color = "red")) +
+    ggplot2::facet_wrap(~model, ncol = 6, scales = "fixed") +
+    ggplot2::ggtitle("False negative rate by model fixed scales, lower is better. \n The black horizontal line is the mean of the results, the red horizontal line is 0.") +
+    ggplot2::labs(y = "False negative rate by model fixed scales, lower is better \n The horizontal line is the mean of the results, the red line is 0.") +
+    ggplot2::theme(legend.position = "none")
+
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("false_negative_rate_plot.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("false_negative_rate_plot.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("false_negative_rate_plot.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("false_negative_rate_plot.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("false_negative_rate_plot.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("false_negative_rate_plot.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+
+  false_negative_rate_plot2 <- ggplot2::ggplot(data = false_negative_rate_data, mapping = ggplot2::aes(x = count, y = data, color = model)) +
+    ggplot2::geom_line(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_point(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_hline(aes(yintercept = mean), linewidth = 1.25) +
+    ggplot2::geom_hline(aes(yintercept = 0, color = "red")) +
+    ggplot2::facet_wrap(~model, ncol = 6, scales = "free") +
+    ggplot2::ggtitle("False negative rate by model free scales, lower is better. \n The black horizontal line is the mean of the results, the red horizontal line is 0.") +
+    ggplot2::labs(y = "False negative rate by model free scales, lower is better \n The horizontal line is the mean of the results, the red line is 0.") +
+    ggplot2::theme(legend.position = "none")
+
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("false_negative_rate_plot2.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("false_negative_rate_plot2.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("false_negative_rate_plot2.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("false_negative_rate_plot2.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("false_negative_rate_plot2.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("false_negative_rate_plot2.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+
+  F1_score_data <- data.frame(
+    "count" = 1:numresamples,
+    "model" = c(
+      rep("Bagged Random Forest", numresamples), rep("Bagging", numresamples),
+      rep("BayesGLM", numresamples),rep("C50", numresamples),
+      rep("Cubist", numresamples), rep("Flexible Discriminant Analysis", numresamples), rep("Generalized Additive Models", numresamples),
+      rep("Generalized Linear Models", numresamples), rep("Gradient Boosted", numresamples), rep("Linear", numresamples),
+      rep("Linear Discrmininant Analysis", numresamples), rep("Mixture Discriminant Analysis", numresamples), rep("Naive Bayes", numresamples),
+      rep("Penalized Discrmininant Analysis", numresamples), rep("Quadratic Discrmininant Analysis", numresamples),
+      rep("Random Forest", numresamples), rep("Ranger", numresamples),
+      rep("RPart", numresamples), rep("Support Vector Machines", numresamples),
+      rep("Trees", numresamples), rep("XGBoost", numresamples),
+      rep("Ensemble Bagging", numresamples),
+      rep("Ensemble C50", numresamples), rep("Ensemble Gradient Boosted", numresamples),
+      rep("Ensemble Partial Least Squares", numresamples),
+      rep("Ensemble Penalized Discrmininant Analysis", numresamples), rep("Ensemble Random Forest", numresamples),
+      rep("Ensemble Ranger", numresamples), rep("Ensemble Regularized Discriminant Analysis", numresamples),
+      rep("Ensemble RPart", numresamples), rep("Ensemble Support Vector Machines", numresamples),
+      rep("Ensemble Trees", numresamples), rep("Ensemble XGBoost", numresamples)
+    ),
+    "data" = c(
+      bag_rf_holdout_F1_score, bagging_holdout_F1_score,
+      bayesglm_holdout_F1_score, C50_holdout_F1_score,
+      cubist_holdout_F1_score, fda_holdout_F1_score, gam_holdout_F1_score,
+      glm_holdout_F1_score, gb_holdout_F1_score,
+      linear_holdout_F1_score, lda_holdout_F1_score, mda_holdout_F1_score,
+      n_bayes_holdout_F1_score, pda_holdout_F1_score,
+      qda_holdout_F1_score, rf_holdout_F1_score, ranger_holdout_F1_score,
+      rpart_holdout_F1_score, svm_holdout_F1_score,
+      tree_holdout_F1_score, svm_holdout_F1_score,
+      ensemble_bagging_holdout_F1_score,
+      ensemble_C50_holdout_F1_score, ensemble_gb_holdout_F1_score,
+      ensemble_pls_holdout_F1_score,
+      ensemble_pda_holdout_F1_score, ensemble_rf_holdout_F1_score,
+      ensemble_ranger_holdout_F1_score, ensemble_rda_holdout_F1_score,
+      ensemble_rpart_holdout_F1_score, ensemble_svm_holdout_F1_score,
+      ensemble_tree_holdout_F1_score, ensemble_xgb_holdout_F1_score
+    ),
+    "mean" = rep(c(
+      bag_rf_holdout_F1_score_mean, bagging_holdout_F1_score_mean,
+      bayesglm_holdout_F1_score_mean, C50_holdout_F1_score_mean,
+      cubist_holdout_F1_score_mean, fda_holdout_F1_score_mean, gam_holdout_F1_score_mean,
+      glm_holdout_F1_score_mean, gb_holdout_F1_score_mean,
+      linear_holdout_F1_score_mean, lda_holdout_F1_score_mean, mda_holdout_F1_score_mean,
+      n_bayes_holdout_F1_score_mean, pda_holdout_F1_score_mean,
+      qda_holdout_F1_score_mean, rf_holdout_F1_score_mean, ranger_holdout_F1_score_mean,
+      rpart_holdout_F1_score_mean, svm_holdout_F1_score_mean,
+      tree_holdout_F1_score_mean, svm_holdout_F1_score_mean,
+      ensemble_bagging_holdout_F1_score_mean,
+      ensemble_C50_holdout_F1_score_mean, ensemble_gb_holdout_F1_score_mean,
+      ensemble_pls_holdout_F1_score_mean,
+      ensemble_pda_holdout_F1_score_mean, ensemble_rf_holdout_F1_score_mean,
+      ensemble_ranger_holdout_F1_score_mean, ensemble_rda_holdout_F1_score_mean,
+      ensemble_rpart_holdout_F1_score_mean, ensemble_svm_holdout_F1_score_mean,
+      ensemble_tree_holdout_F1_score_mean, ensemble_xgb_holdout_F1_score_mean
+    ), each = numresamples)
+  )
+
+  F1_score_plot <- ggplot2::ggplot(data = F1_score_data, mapping = ggplot2::aes(x = count, y = data, color = model)) +
+    ggplot2::geom_line(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_point(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_hline(aes(yintercept = mean), linewidth = 1.25) +
+    ggplot2::geom_hline(aes(yintercept = 1, color = "red")) +
+    ggplot2::facet_wrap(~model, ncol = 6, scales = "fixed") +
+    ggplot2::ggtitle("F1 score by model fixed scales, higher is better. \n The black horizontal line is the mean of the results, the red horizontal line is 1.") +
+    ggplot2::labs(y = "F1 score by model fixed scales, higher is better \n The horizontal line is the mean of the results, the red line is 1.") +
+    ggplot2::theme(legend.position = "none")
+
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("F1_score_plot.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("F1_score_plot.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("F1_score_plot.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("F1_score_plot.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("F1_score_plot.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("F1_score_plot.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+
+  F1_score_plot2 <- ggplot2::ggplot(data = F1_score_data, mapping = ggplot2::aes(x = count, y = data, color = model)) +
+    ggplot2::geom_line(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_point(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_hline(aes(yintercept = mean), linewidth = 1.25) +
+    ggplot2::geom_hline(aes(yintercept = 1, color = "red")) +
+    ggplot2::facet_wrap(~model, ncol = 6, scales = "free") +
+    ggplot2::ggtitle("F1 score by model free scales, higher is better. \n The black horizontal line is the mean of the results, the red horizontal line is 1.") +
+    ggplot2::labs(y = "F1 score by model free scales, higher is better \n The horizontal line is the mean of the results, the red line is 1.") +
+    ggplot2::theme(legend.position = "none")
+
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("F1_score_plot2.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("F1_score_plot2.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("F1_score_plot2.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("F1_score_plot2.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("F1_score_plot2.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("F1_score_plot2.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+
+  positive_predictive_value_data <- data.frame(
+    "count" = 1:numresamples,
+    "model" = c(
+      rep("Bagged Random Forest", numresamples), rep("Bagging", numresamples),
+      rep("BayesGLM", numresamples),rep("C50", numresamples),
+      rep("Cubist", numresamples), rep("Flexible Discriminant Analysis", numresamples), rep("Generalized Additive Models", numresamples),
+      rep("Generalized Linear Models", numresamples), rep("Gradient Boosted", numresamples), rep("Linear", numresamples),
+      rep("Linear Discrmininant Analysis", numresamples), rep("Mixture Discriminant Analysis", numresamples), rep("Naive Bayes", numresamples),
+      rep("Penalized Discrmininant Analysis", numresamples), rep("Quadratic Discrmininant Analysis", numresamples),
+      rep("Random Forest", numresamples), rep("Ranger", numresamples),
+      rep("RPart", numresamples), rep("Support Vector Machines", numresamples),
+      rep("Trees", numresamples), rep("XGBoost", numresamples),
+      rep("Ensemble Bagging", numresamples),
+      rep("Ensemble C50", numresamples), rep("Ensemble Gradient Boosted", numresamples),
+      rep("Ensemble Partial Least Squares", numresamples),
+      rep("Ensemble Penalized Discrmininant Analysis", numresamples), rep("Ensemble Random Forest", numresamples),
+      rep("Ensemble Ranger", numresamples), rep("Ensemble Regularized Discriminant Analysis", numresamples),
+      rep("Ensemble RPart", numresamples), rep("Ensemble Support Vector Machines", numresamples),
+      rep("Ensemble Trees", numresamples), rep("Ensemble XGBoost", numresamples)
+    ),
+    "data" = c(
+      bag_rf_holdout_positive_predictive_value, bagging_holdout_positive_predictive_value,
+      bayesglm_holdout_positive_predictive_value, C50_holdout_positive_predictive_value,
+      cubist_holdout_positive_predictive_value, fda_holdout_positive_predictive_value, gam_holdout_positive_predictive_value,
+      glm_holdout_positive_predictive_value, gb_holdout_positive_predictive_value,
+      linear_holdout_positive_predictive_value, lda_holdout_positive_predictive_value, mda_holdout_positive_predictive_value,
+      n_bayes_holdout_positive_predictive_value, pda_holdout_positive_predictive_value,
+      qda_holdout_positive_predictive_value, rf_holdout_positive_predictive_value, ranger_holdout_positive_predictive_value,
+      rpart_holdout_positive_predictive_value, svm_holdout_positive_predictive_value,
+      tree_holdout_positive_predictive_value, svm_holdout_positive_predictive_value,
+      ensemble_bagging_holdout_positive_predictive_value,
+      ensemble_C50_holdout_positive_predictive_value, ensemble_gb_holdout_positive_predictive_value,
+      ensemble_pls_holdout_positive_predictive_value,
+      ensemble_pda_holdout_positive_predictive_value, ensemble_rf_holdout_positive_predictive_value,
+      ensemble_ranger_holdout_positive_predictive_value, ensemble_rda_holdout_positive_predictive_value,
+      ensemble_rpart_holdout_positive_predictive_value, ensemble_svm_holdout_positive_predictive_value,
+      ensemble_tree_holdout_positive_predictive_value, ensemble_xgb_holdout_positive_predictive_value
+    ),
+    "mean" = rep(c(
+      bag_rf_holdout_positive_predictive_value_mean, bagging_holdout_positive_predictive_value_mean,
+      bayesglm_holdout_positive_predictive_value_mean, C50_holdout_positive_predictive_value_mean,
+      cubist_holdout_positive_predictive_value_mean, fda_holdout_positive_predictive_value_mean, gam_holdout_positive_predictive_value_mean,
+      glm_holdout_positive_predictive_value_mean, gb_holdout_positive_predictive_value_mean,
+      linear_holdout_positive_predictive_value_mean, lda_holdout_positive_predictive_value_mean, mda_holdout_positive_predictive_value_mean,
+      n_bayes_holdout_positive_predictive_value_mean, pda_holdout_positive_predictive_value_mean,
+      qda_holdout_positive_predictive_value_mean, rf_holdout_positive_predictive_value_mean, ranger_holdout_positive_predictive_value_mean,
+      rpart_holdout_positive_predictive_value_mean, svm_holdout_positive_predictive_value_mean,
+      tree_holdout_positive_predictive_value_mean, svm_holdout_positive_predictive_value_mean,
+      ensemble_bagging_holdout_positive_predictive_value_mean,
+      ensemble_C50_holdout_positive_predictive_value_mean, ensemble_gb_holdout_positive_predictive_value_mean,
+      ensemble_pls_holdout_positive_predictive_value_mean,
+      ensemble_pda_holdout_positive_predictive_value_mean, ensemble_rf_holdout_positive_predictive_value_mean,
+      ensemble_ranger_holdout_positive_predictive_value_mean, ensemble_rda_holdout_positive_predictive_value_mean,
+      ensemble_rpart_holdout_positive_predictive_value_mean, ensemble_svm_holdout_positive_predictive_value_mean,
+      ensemble_tree_holdout_positive_predictive_value_mean, ensemble_xgb_holdout_positive_predictive_value_mean
+    ), each = numresamples)
+  )
+
+  positive_predictive_value_plot <- ggplot2::ggplot(data = positive_predictive_value_data, mapping = ggplot2::aes(x = count, y = data, color = model)) +
+    ggplot2::geom_line(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_point(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_hline(aes(yintercept = mean), linewidth = 1.25) +
+    ggplot2::geom_hline(aes(yintercept = 1, color = "red")) +
+    ggplot2::facet_wrap(~model, ncol = 6, scales = "fixed") +
+    ggplot2::ggtitle("Positive predictive value by model fixed scales, higher is better. \n The black horizontal line is the mean of the results, the red horizontal line is 1.") +
+    ggplot2::labs(y = "Positive predictive value by model fixed scales, higher is better \n The horizontal line is the mean of the results, the red line is 1.") +
+    ggplot2::theme(legend.position = "none")
+
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("positive_predictive_value_plot.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("positive_predictive_value_plot.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("positive_predictive_value_plot.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("positive_predictive_value_plot.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("positive_predictive_value_plot.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("positive_predictive_value_plot.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+
+  positive_predictive_value_plot2 <- ggplot2::ggplot(data = positive_predictive_value_data, mapping = ggplot2::aes(x = count, y = data, color = model)) +
+    ggplot2::geom_line(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_point(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_hline(aes(yintercept = mean), linewidth = 1.25) +
+    ggplot2::geom_hline(aes(yintercept = 1, color = "red")) +
+    ggplot2::facet_wrap(~model, ncol = 6, scales = "free") +
+    ggplot2::ggtitle("Positive predictive value by model free scales, higher is better. \n The black horizontal line is the mean of the results, the red horizontal line is 1.") +
+    ggplot2::labs(y = "Positive predictive value by model free scales, higher is better \n The horizontal line is the mean of the results, the red line is 1.") +
+    ggplot2::theme(legend.position = "none")
+
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("positive_predictive_value_plot2.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("positive_predictive_value_plot2.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("positive_predictive_value_plot2.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("positive_predictive_value_plot2.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("positive_predictive_value_plot2.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("positive_predictive_value_plot2.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+
+  negative_predictive_value_data <- data.frame(
+    "count" = 1:numresamples,
+    "model" = c(
+      rep("Bagged Random Forest", numresamples), rep("Bagging", numresamples),
+      rep("BayesGLM", numresamples),rep("C50", numresamples),
+      rep("Cubist", numresamples), rep("Flexible Discriminant Analysis", numresamples), rep("Generalized Additive Models", numresamples),
+      rep("Generalized Linear Models", numresamples), rep("Gradient Boosted", numresamples), rep("Linear", numresamples),
+      rep("Linear Discrmininant Analysis", numresamples), rep("Mixture Discriminant Analysis", numresamples), rep("Naive Bayes", numresamples),
+      rep("Penalized Discrmininant Analysis", numresamples), rep("Quadratic Discrmininant Analysis", numresamples),
+      rep("Random Forest", numresamples), rep("Ranger", numresamples),
+      rep("RPart", numresamples), rep("Support Vector Machines", numresamples),
+      rep("Trees", numresamples), rep("XGBoost", numresamples),
+      rep("Ensemble Bagging", numresamples),
+      rep("Ensemble C50", numresamples), rep("Ensemble Gradient Boosted", numresamples),
+      rep("Ensemble Partial Least Squares", numresamples),
+      rep("Ensemble Penalized Discrmininant Analysis", numresamples), rep("Ensemble Random Forest", numresamples),
+      rep("Ensemble Ranger", numresamples), rep("Ensemble Regularized Discriminant Analysis", numresamples),
+      rep("Ensemble RPart", numresamples), rep("Ensemble Support Vector Machines", numresamples),
+      rep("Ensemble Trees", numresamples), rep("Ensemble XGBoost", numresamples)
+    ),
+    "data" = c(
+      bag_rf_holdout_negative_predictive_value, bagging_holdout_negative_predictive_value,
+      bayesglm_holdout_negative_predictive_value, C50_holdout_negative_predictive_value,
+      cubist_holdout_negative_predictive_value, fda_holdout_negative_predictive_value, gam_holdout_negative_predictive_value,
+      glm_holdout_negative_predictive_value, gb_holdout_negative_predictive_value,
+      linear_holdout_negative_predictive_value, lda_holdout_negative_predictive_value, mda_holdout_negative_predictive_value,
+      n_bayes_holdout_negative_predictive_value, pda_holdout_negative_predictive_value,
+      qda_holdout_negative_predictive_value, rf_holdout_negative_predictive_value, ranger_holdout_negative_predictive_value,
+      rpart_holdout_negative_predictive_value, svm_holdout_negative_predictive_value,
+      tree_holdout_negative_predictive_value, svm_holdout_negative_predictive_value,
+      ensemble_bagging_holdout_negative_predictive_value,
+      ensemble_C50_holdout_negative_predictive_value, ensemble_gb_holdout_negative_predictive_value,
+      ensemble_pls_holdout_negative_predictive_value,
+      ensemble_pda_holdout_negative_predictive_value, ensemble_rf_holdout_negative_predictive_value,
+      ensemble_ranger_holdout_negative_predictive_value, ensemble_rda_holdout_negative_predictive_value,
+      ensemble_rpart_holdout_negative_predictive_value, ensemble_svm_holdout_negative_predictive_value,
+      ensemble_tree_holdout_negative_predictive_value, ensemble_xgb_holdout_negative_predictive_value
+    ),
+    "mean" = rep(c(
+      bag_rf_holdout_negative_predictive_value_mean, bagging_holdout_negative_predictive_value_mean,
+      bayesglm_holdout_negative_predictive_value_mean, C50_holdout_negative_predictive_value_mean,
+      cubist_holdout_negative_predictive_value_mean, fda_holdout_negative_predictive_value_mean, gam_holdout_negative_predictive_value_mean,
+      glm_holdout_negative_predictive_value_mean, gb_holdout_negative_predictive_value_mean,
+      linear_holdout_negative_predictive_value_mean, lda_holdout_negative_predictive_value_mean, mda_holdout_negative_predictive_value_mean,
+      n_bayes_holdout_negative_predictive_value_mean, pda_holdout_negative_predictive_value_mean,
+      qda_holdout_negative_predictive_value_mean, rf_holdout_negative_predictive_value_mean, ranger_holdout_negative_predictive_value_mean,
+      rpart_holdout_negative_predictive_value_mean, svm_holdout_negative_predictive_value_mean,
+      tree_holdout_negative_predictive_value_mean, svm_holdout_negative_predictive_value_mean,
+      ensemble_bagging_holdout_negative_predictive_value_mean,
+      ensemble_C50_holdout_negative_predictive_value_mean, ensemble_gb_holdout_negative_predictive_value_mean,
+      ensemble_pls_holdout_negative_predictive_value_mean,
+      ensemble_pda_holdout_negative_predictive_value_mean, ensemble_rf_holdout_negative_predictive_value_mean,
+      ensemble_ranger_holdout_negative_predictive_value_mean, ensemble_rda_holdout_negative_predictive_value_mean,
+      ensemble_rpart_holdout_negative_predictive_value_mean, ensemble_svm_holdout_negative_predictive_value_mean,
+      ensemble_tree_holdout_negative_predictive_value_mean, ensemble_xgb_holdout_negative_predictive_value_mean
+    ), each = numresamples)
+  )
+
+  negative_predictive_value_plot <- ggplot2::ggplot(data = negative_predictive_value_data, mapping = ggplot2::aes(x = count, y = data, color = model)) +
+    ggplot2::geom_line(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_point(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_hline(aes(yintercept = mean), linewidth = 1.25) +
+    ggplot2::geom_hline(aes(yintercept = 1, color = "red")) +
+    ggplot2::facet_wrap(~model, ncol = 6, scales = "fixed") +
+    ggplot2::ggtitle("Negative predictive value by model fixed scales, higher is better. \n The black horizontal line is the mean of the results, the red horizontal line is 1.") +
+    ggplot2::labs(y = "Negative predictive value by model fixed scales, higher is better \n The horizontal line is the mean of the results, the red line is 1.") +
+    ggplot2::theme(legend.position = "none")
+
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("negative_predictive_value_plot.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("negative_predictive_value_plot.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("negative_predictive_value_plot.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("negative_predictive_value_plot.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("negative_predictive_value_plot.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("negative_predictive_value_plot.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+
+  negative_predictive_value_plot2 <- ggplot2::ggplot(data = negative_predictive_value_data, mapping = ggplot2::aes(x = count, y = data, color = model)) +
+    ggplot2::geom_line(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_point(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_hline(aes(yintercept = mean), linewidth = 1.25) +
+    ggplot2::geom_hline(aes(yintercept = 1, color = "red")) +
+    ggplot2::facet_wrap(~model, ncol = 6, scales = "free") +
+    ggplot2::ggtitle("Negative predictive value by model free scales, higher is better. \n The black horizontal line is the mean of the results, the red horizontal line is 1.") +
+    ggplot2::labs(y = "Negative predictive value by model free scales, higher is better \n The horizontal line is the mean of the results, the red line is 1.") +
+    ggplot2::theme(legend.position = "none")
+
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("negative_predictive_value_plot2.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("negative_predictive_value_plot2.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("negative_predictive_value_plot2.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("negative_predictive_value_plot2.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("negative_predictive_value_plot2.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("negative_predictive_value_plot2.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
 
   overfitting_data <- data.frame(
     "count" = 1:numresamples,
@@ -5318,10 +6357,55 @@ Logistic <- function(data, colnum, numresamples, save_all_trained_models = c("Y"
     ggplot2::geom_line(mapping = aes(x = count, y = data)) +
     ggplot2::geom_point(mapping = aes(x = count, y = data)) +
     ggplot2::geom_hline(aes(yintercept = 1, color = "red")) +
-    ggplot2::facet_wrap(~model, ncol = 6) +
-    ggplot2::ggtitle("Overfitting plot\nOverfitting value by model, closer to one is better. \n The black horizontal line is the mean of the results, the red horizontal line is 1.") +
-    ggplot2::labs(y = "Overfititng value, closer to one is better \n The horizontal line is the mean of the results, the red line is 1.") +
+    ggplot2::facet_wrap(~model, ncol = 6, scales = "fixed") +
+    ggplot2::ggtitle("Overfitting plot fixed scales\nOverfitting value by model, closer to one is better. \n The black horizontal line is the mean of the results, the red horizontal line is 1.") +
+    ggplot2::labs(y = "Overfititng value fixed scales, closer to one is better \n The horizontal line is the mean of the results, the red line is 1.") +
     ggplot2::theme(legend.position = "none")
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("overfitting_plot.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("overfitting_plot.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("overfitting_plot.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("overfitting_plot.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("overfitting_plot.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("overfitting_plot.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+
+  overfitting_plot2 <- ggplot2::ggplot(data = overfitting_data, mapping = ggplot2::aes(x = count, y = data, color = model)) +
+    ggplot2::geom_line(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_point(mapping = aes(x = count, y = data)) +
+    ggplot2::geom_hline(aes(yintercept = 1, color = "red")) +
+    ggplot2::facet_wrap(~model, ncol = 6, scales = "free") +
+    ggplot2::ggtitle("Overfitting plot free scales\nOverfitting value by model, closer to one is better. \n The black horizontal line is the mean of the results, the red horizontal line is 1.") +
+    ggplot2::labs(y = "Overfititng value free scales, closer to one is better \n The horizontal line is the mean of the results, the red line is 1.") +
+    ggplot2::theme(legend.position = "none")
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("overfitting_plot2.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("overfitting_plot2.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("overfitting_plot2.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("overfitting_plot2.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("overfitting_plot2.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("overfitting_plot2.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
 
   accuracy_barchart <- ggplot2::ggplot(holdout_results, aes(x = reorder(Model, dplyr::desc(Accuracy)), y = Accuracy)) +
     ggplot2::geom_col(width = 0.5)+
@@ -5331,6 +6415,25 @@ Logistic <- function(data, colnum, numresamples, save_all_trained_models = c("Y"
     ggplot2::ylim(0, max(holdout_results$Accuracy) + 1) +
     ggplot2::geom_errorbar(aes(x = Model, ymin = Accuracy - Accuracy_sd, ymax = Accuracy + Accuracy_sd))
 
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("accuracy_barchart.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("accuracy_barchart.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("accuracy_barchart.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("accuracy_barchart.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("accuracy_barchart.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("accuracy_barchart.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+
   overfitting_barchart <- ggplot2::ggplot(holdout_results, aes(x = reorder(Model, dplyr::desc(Overfitting_Mean)), y = Overfitting_Mean)) +
     ggplot2::geom_col(width = 0.5)+
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = 1, hjust=1)) +
@@ -5339,12 +6442,49 @@ Logistic <- function(data, colnum, numresamples, save_all_trained_models = c("Y"
     ggplot2::ylim(0, max(holdout_results$Overfitting_Mean) +1) +
     ggplot2::geom_errorbar(aes(x = Model, ymin = Overfitting_Mean - Overfitting_sd, ymax = Overfitting_Mean + Overfitting_sd))
 
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("overfitting_barchart.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("overfitting_barchart.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("overfitting_barchart.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("overfitting_barchart.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("overfitting_barchart.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("overfitting_barchart.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+
   duration_barchart <- ggplot2::ggplot(holdout_results, aes(x = reorder(Model, Duration), y = Duration)) +
     ggplot2::geom_col(width = 0.5)+
     ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 90, vjust = 1, hjust=1)) +
     ggplot2::labs(x = "Model", y = "Duration", title = "Duration, shorter is better") +
     ggplot2::geom_text(aes(label = Duration), vjust = 0,hjust = -0.5, angle = 90) +
     ggplot2::geom_errorbar(aes(x = Model, ymin = Duration - Duration_sd, ymax = Duration + Duration_sd))
+  if(save_all_plots == "Y" && device == "eps"){
+    ggplot2::ggsave("duration_barchart.eps", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "jpeg"){
+    ggplot2::ggsave("duration_barchart.jpeg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "pdf"){
+    ggplot2::ggsave("duration_barchart.pdf", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "png"){
+    ggplot2::ggsave("duration_barchart.png", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "svg"){
+    ggplot2::ggsave("duration_barchart.svg", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
+  if(save_all_plots == "Y" && device == "tiff"){
+    ggplot2::ggsave("duration_barchart.tiff", width = width, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  }
 
   if (save_all_trained_models == "Y") {
     bag_rf_train_fit <<- bag_rf_train_fit
@@ -5486,6 +6626,10 @@ Logistic <- function(data, colnum, numresamples, save_all_trained_models = c("Y"
     ) %>%
       reactablefmtr::add_title("New data results")
 
+    if(save_all_plots == "Y"){
+      reactablefmtr::save_reactable_test(new_data_results, "New_data_results.html")
+    }
+
     summary_tables <- list(
       "Bagged_Random_Forest" = bag_rf_table_total, "Bagging" = bagging_table_total, "BayesGLM" = bayesglm_table_total,
       "C50" = C50_table_total, "Cubist" = cubist_table_total, "Fixture Discrmininant Analysis" = fda_table_total, "Generalized Additive Methods" = gam_table_total,
@@ -5529,7 +6673,14 @@ Logistic <- function(data, colnum, numresamples, save_all_trained_models = c("Y"
   return(list(
     "Head_of_data" = head_df, "Summary_tables" = summary_tables, "accuracy_plot" = accuracy_plot, "total_plot" = total_plot, "accuracy_barchart" = accuracy_barchart,
     "overfitting_plot" = overfitting_plot, "Duration_barchart" = duration_barchart, "Overfitting_barchart" = overfitting_barchart, "ROC_curves" = ROC_curves,
-    "Boxplots" = boxplots, "Barchart" = barchart, "Correlation_table" = correlation_table,
+    "Boxplots" = boxplots, "Barchart" = barchart, "Correlation_table" = correlation_table, 'VIF_results' = VIF_results,
+    'True_positive_rate' = true_positive_rate_plot, 'True_positive_rate2' = true_positive_rate_plot2,
+    'True_negative_rate' = true_negative_rate_plot, 'True_negative_rate2' = true_negative_rate_plot2,
+    'False_positive_rate' = false_positive_rate_plot, 'False_positive_rate2' = false_positive_rate_plot2,
+    'False_negative_rate' = false_negative_rate_plot, 'False_negative_rate2' = false_negative_rate_plot2,
+    'F1_score' = F1_score_plot, 'F1_score2' = F1_score_plot2,
+    'Positive_predictive_value' = positive_predictive_value_plot, 'Positive_predictive_value2' = positive_predictive_value_plot2,
+    'Negative_predictive_value' = negative_predictive_value_plot, 'Negative_predictive_value2' = negative_predictive_value_plot2,
     "Ensemble Correlation" = ensemble_correlation, "Ensemble_head" = head_ensemble,
     "Data_Summary" = data_summary, "Holdout_results" = holdout_results_final,
     "How_to_handle_strings" = how_to_handle_strings, "Train_amount" = train_amount, "Test_amount" = test_amount, "Validation_amount" = validation_amount
