@@ -20,80 +20,99 @@ This is a basic example which shows you how to solve a common problem:
 
 ``` r
 library(LogisticEnsembles)
-Logistic(data = SAHeart,
-    colnum = 10,
-    numresamples = 2,
-    how_to_handle_strongs = 1,
-    do_you_have_new_data = "N",
-    save_all_trained_models = "N",
-    remove_ensemble_correlations_greater_than = 1.00,
-    use_parallel = "N",
-    train_amount = 0.60,
-    test_amount = 0.20,
-    validation_amount = 0.20)
+Logistic(data = LogisticEnsembles::Lebron,
+colnum = 6,
+numresamples = 25,
+remove_VIF_greater_than = 4.00,
+remove_ensemble_correlations_greater_than = 0.98,
+save_all_trained_models = "N",
+save_all_plots = "N",
+how_to_handle_strings = 0,
+do_you_have_new_data = "N",
+use_parallel = "Y",
+train_amount = 0.60,
+test_amount = 0.20,
+validation_amount = 0.20)
 ```
-Each of the 36 models returns a probability between 0 and 1. Each of the 36 models fit the data to the training set, make predictions and measure accuracy on the test and validation sets.
+Each of the 33 models returns a probability between 0 and 1. Each of the 33 models fit the data to the training set, make predictions and measure accuracy on the test and validation sets.
 
-The list of 36 logistic models:
+The list of 33 models:
 
-1. ADA Boost
-2. Bagged Random Forest
-3. Bagging
-4. BayesGLM
-5. BayesRNN
-6. C50
-7. Cubist
-8. Ensemble ADA Boost
-9. Ensemble Bagging
-10. Ensemble C50
-11. Ensemble Gradient Boosted
-12. Ensemble Partial Least Squares
-13. Ensemble Penalized Discrminant Analysis
-14. Ensemble Random Forest
-15. Ensemble Ranger
-16. Ensemble Regularized Discrminant Analysis
-17. Ensemble RPart
-18. Ensemble Support Vector Machines
-19. Ensemble Trees
-20. Ensemble XGBoost
-21. Flexible Discriminant Analysis
-22. Generalized Additive Models
-23. Generalized Linear Models
-24. Gradient Boosted
-25. Linear Discrmininant Analysis
-26. Linear Model
-27. Mixed Discrmininant Analysis
-28. Naive Bayes
-28. Penalized Discrminant Analysis
-30. Quadratic Discrmininant Analysis
-31. Random Forest
-32. Ranger
-33. RPart
-34. Support Vector Machines
-35. Trees
-36. XGBoost
+1. Bagged Random Forest
+2. Bagging
+3. BayesGLM
+4. C50
+5. Cubist
+6. Ensemble Bagging
+7. Ensemble C50
+8. Ensemble Gradient Boosted
+9. Ensemble Partial Least Squares
+10. Ensemble Penalized Discriminant Analysis
+11. Ensemble Random Forest
+12. Ensemble Ranger
+13. Ensemble Regularized Discriminant Analysis
+14. Ensemble RPart
+15. Ensemble Support Vector Machines
+16. Ensemble Trees
+17. Ensemble XGBoost
+18. Flexible Discriminant Analysis
+19. Generalized Additive Models
+20. Generalized Linear Models
+21. Gradient Boosted
+22. Linear Discriminant Analysis
+23. Linear Model
+24. Mixed Discriminant Analysis
+25. Naive Bayes
+26. Penalized Discriminant Analysis
+27. Quadratic Discriminant Analysis
+28. Random Forest
+29. Ranger
+30. RPart
+31. Support Vector Machines
+32. Trees
+33. XGBoost
 
-The 13 plots automatically created by the package are:
-
-1. Target vs each feature (multiple barcharts)
-2. Boxplots of the numeric data
-3. Over or underfitting barchart
-4. Duration barchart
-5. Overfitting by model and resample
+The 25 plots automatically created by the package are:
+1. Correlation of the data as numbers and colors
+2. Correlation of the data as colors and circles
+3. 33 ROC curves (specificity vs sensitivity), including ROC value
+4. Accuracy by model, fixed scales
+5. Accuracy data including train and holdout results including train and holdout
 6. Model accuracy barchart
-7. Accuracy by model and resample
-8. Accuracy by model
-9. ROC curves
-10. Pairwise scatterplots
-11. Correlation of the data as circles by color and size
-12. Correlation of the data by color and number
+7. Overfitting plot by model and resample
+8. Duration barchart
+9. Over or underfitting barchart
+10. Boxplots of the numeric data
+11. Barchart of target (0 or 1) vs target
+12. True positive rate by model, fixed scales
+13. True positive rate by model, free scales
+14. True negative rate by model, fixed scales
+15. True negative rate by model, free scales
+16. False positive rate by model, fixed scales
+17. False positive rate by model, free scales
+18. False negative rate by model, fixed scales
+19. False negative rate by model, free scales
+20. F1 score by model, fixed scales
+21. F1 score by model, free scales
+22. Positive predictive value by model, fixed scales
+23. Positive predictive value by model, free scales
+24. Negative predictive value by model, fixed scales
+25. Negative predictive value by model, free scales
 
-The tables and reports automtically created:
-1. Summary report. This includes the Model, Accuracy, True Postive, True Negative, False Positive, False Negative, Positive Predictive Value, Negative Predictive Value, F1 score, Area under the curve, overfitting min, overfitting mean, overfitting max, and duration.
+
+The tables and reports automatically created:
+1. Summary report. This includes the Model, Accuracy, True Positive, True Negative, False Positive, False Negative, Positive Predictive Value, Negative Predictive Value, F1 score, Area under the curve, overfitting min, overfitting mean, overfitting max, and duration.
 2. Data summary
 3. Head of the ensemble
 4. Correlation of the ensemble
-5. Correlation of the data
-6. Head of the data frame
+5. Variance Inflation factor
+6. Correlation of the data
+7. Head of the data frame
 
-The package also returns all 36 summary reports, alphabetical by model.
+The package also returns all 33 summary confusion matrices, alphabetical by model. If the user uses resampling, it adds up the values, so any error is visibile. For example, for the Lebron data:
+
+Summary_tables$`Random Forest`
+                     y_test
+rf_test_probabilities    0    1
+                    0 7586    0
+                    1    0 7779
