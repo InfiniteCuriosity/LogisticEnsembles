@@ -1,10 +1,14 @@
 Package: LogisticEnsembles
 Type: Package
-Title: Automatically Returns 36 Logistic Models (23 Individual Models and 13 Ensembles of Models)
+Title: Automatically Runs 36 Logistic Models (Individual and Ensembles)
 Version: 0.4.0
 Authors@R: 
     person("Russ", "Conte", , "russconte@mac.com", role = c("aut", "cre", "cph"))
-Description: Automatically returns 36 logistic models including 23 individual models and 13 ensembles of models of logistic data. The package also returns 10 plots, 5 tables, and a summary report.
+Description: Automatically returns 36 logistic models including 23 individual models and 13 ensembles of models of logistic data. The package also returns 10 plots, 5 tables, and a summary report. The package automatically
+    builds all 36 models, reports all results, and provides graphics to show how the models performed. This can be used for a wide range of data sets. The package includes medical data (the Pima Indians data set), and
+    information about the performance of Lebron James. LogisticEnsembles can be used to analyze many other examples, such as stock market data. The package automatically returns many values for each model, such as
+    True Postive Rate, True Negative Rate, False Positive Rate, False Negative Rate, Positive Predictive Value, Negative Predictive Value, F1 Score, Area Under the Curve. The package also returns 36 Receiver
+    Operating Characteristic (ROC) curves for each of the 36 models.
 License: MIT + file LICENSE
 Depends:
     adabag,
