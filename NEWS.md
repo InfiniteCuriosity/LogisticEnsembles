@@ -1,3 +1,5 @@
+# LogisticEnsembles 0.5.0
+
 # LogisticEnsembles 0.4.0
 
 # LogisticEnsembles 0.3.0
