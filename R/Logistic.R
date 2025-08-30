@@ -3282,7 +3282,7 @@ pda_ROC <- pROC::ggroc(pda_roc_obj, color = "steelblue", size = 2) +
   ggplot2::labs(x = "Specificity", y = "Sensitivity") +
   ggplot2::annotate("segment", x = 1, xend = 0, y = 0, yend = 1, color = "grey")
 
-qda_roc_obj <- pROC::roc(as.numeric(c(test01$y, validation01$y)), as.numeric(c(qda_test_pred$class, qda_validation_pred$class)))
+qda_roc_obj <- pROC::roc(as.numeric(c(test01$y, validation01$y)), as.numeric(c(qda_test_predictions_binomial, qda_validation_predidctions_binomial)))
 qda_auc <- round((pROC::auc(c(test01$y, validation01$y), as.numeric(c(qda_test_predictions_binomial, qda_validation_predictions_binomial)) - 1)), 4)
 qda_ROC <- pROC::ggroc(qda_roc_obj, color = "steelblue", size = 2) +
   ggplot2::ggtitle(paste0("Quadratic Discriminant Analysis ", "(AUC = ", qda_auc, ")")) +
