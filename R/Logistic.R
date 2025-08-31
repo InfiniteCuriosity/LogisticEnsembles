@@ -3934,7 +3934,7 @@ ensemble_gb_ROC <- pROC::ggroc(ensemble_gb_roc_obj, color = "steelblue", size = 
 ensemble_lasso_roc_obj <- pROC::roc(as.numeric(c(ensemble_test$y, ensemble_validation$y)), as.numeric(c(ensemble_lasso_test_predictions_binomial, ensemble_lasso_validation_predictions_binomial)))
 ensemble_lasso_auc <- round((pROC::auc(c(ensemble_test$y, ensemble_validation$y), as.numeric(c(ensemble_lasso_test_predictions_binomial, ensemble_lasso_validation_predictions_binomial)) - 1)), 4)
 ensemble_lasso_ROC <- pROC::ggroc(ensemble_lasso_roc_obj, color = "steelblue", size = 2) +
-  ggplot2::ggtitle(paste0("Ensemble lasso ", "(AUC = ", ensemble_lasso_auc, ")")) +
+  ggplot2::ggtitle(paste0("Ensemble Lasso ", "(AUC = ", ensemble_lasso_auc, ")")) +
   ggplot2::labs(x = "Specificity", y = "Sensitivity") +
   ggplot2::annotate("segment", x = 1, xend = 0, y = 0, yend = 1, color = "grey")
 
