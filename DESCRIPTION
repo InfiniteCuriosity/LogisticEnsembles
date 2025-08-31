@@ -1,7 +1,7 @@
 Package: LogisticEnsembles
 Type: Package
 Title: Automatically Runs 36 Logistic Models (Individual and Ensembles)
-Version: 0.8.1
+Version: 0.8.1.9000
 Authors@R: 
     person("Russ", "Conte", , "russconte@mac.com", role = c("aut", "cre", "cph"))
 Description: Automatically returns 24 logistic models including 13 individual models and 11 ensembles of models of logistic data. The package also returns 25 plots, 5 tables, and a summary report. The package automatically
