@@ -1,0 +1,200 @@
+---
+title: "LogisticEnsembles-vignette"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{LogisticEnsembles-vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+**Welcome to LogisticEnsembles!** This is an all-in-one solution to logistic data, which is very commonly used in areas such as human resources, sports analytics, and talent analytics, among many other areas.
+
+**What is logistic data?** This is data that is binary, such as 1 or 0, up or down, on or off, etc.
+
+**Lebron data is logistic, and will be our example.**
+
+The Lebron data set was originally posted at kaggle.com.
+
+It was filtered for Lebron, but others players are also in the data set.
+
+The head of the Lebron data set looks like this:
+
+![Head of the Lebron data set](head_lebron_data.png){width="700"}
+
+The sixth column, result, is the target column. 1 indicates Lebron made the shot, 0 indicates he missed.
+
+**How to run LogisticEnsembles (using the Lebron data in the LogisticEnsembles package as an example):**
+
+```         
+install.packages('LogisticEnsembles') # if needed
+library(LogisticEnsembles)
+Logistic(data = Lebron,
+         colnum = 6,
+         numresamples = 25,
+         remove_VIF_greater_than <- 5.00,
+         save_all_trained_models = "N",
+         save_all_plots = "N",
+         set_seed = "N",
+         how_to_handle_strings = 0,
+         do_you_have_new_data = "N",
+         remove_ensemble_correlations_greater_than = 0.80,
+         use_parallel = "Y",
+         train_amount = 0.50,
+         test_amount = 0.25,
+         validation_amount = 0.25)
+```
+
+**What does LogisticEnsembles do?**
+
+The goal of LogisticEnsembles is to automatically conduct a thorough analysis of data which includes logistic data. The user only needs to provide the data and answer a few questions, such as which column is the target column, and LogisticEnsembles will do all the rest.
+
+LogisticEnsembles builds 24 individual logistic models. It does this by building a model, and then converting the results into a probability between 0 and 1. The function then makes predictions. If the probability is \>0.5, it assigns a result of 1, otherwise 0.
+
+One of the many results that are returned are ROC curves for all 24 models. Specificity is on the x-axis and sensitivity on the y-axis. Here are nine of the 24 total ROC curves automatically provided by the function:
+
+![Example of nine the ROC curves. Note that two have an AUC=1.](Example_ROC_curves.png){width="700"}
+
+The 13 individual models are:
+
+1.  Cubist
+2.  Flexible Discriminant Analysis
+3.  Generalized Additive Models
+4.  Generalized Linear Models
+5.  Lasso
+6.  Linear
+7.  Linear Discriminant Analysis
+8.  Penalized Discriminant Analysis
+9.  Quadratic Discrmininant Analysis
+10. Random Forest
+11. Ridge
+12. Support Vector Machines
+13. Trees
+
+The 11 ensembles of models are:
+
+1.  Ensemble Bagging
+2.  Ensemble C50
+3.  Ensemble Gradient Boosted
+4.  Ensemble Lasso
+5.  Ensemble Partial Least Squares
+6.  Ensemble Penalized Discrmininant Analysis
+7.  Ensemble Ridge
+8.  Ensemble RPart
+9.  Ensemble Support Vector Machines
+10. Ensemble Trees
+11. Ensemble XGBoost
+
+# Installation
+
+You can install the development version of LogisticEnsembles like so:
+
+```         
+devtools::install_github("InfiniteCuriosity/LogisticEnsembles")
+```
+
+# Example
+
+We will analyze the data on Lebron James. The LogisticEnsembles package will automatically split the data into train (60% in this case), test (20% in this case) and validation (20% in this case), fit each model on the training data, make predictions and track accuracy on the test and holdout data.
+
+```         
+Logistic(data = Lebron,
+         colnum = 6,
+         numresamples = 25,
+         remove_VIF_greater_than <- 5.00,
+         save_all_trained_models = "N",
+         save_all_plots = "N",
+         set_seed = "N",
+         how_to_handle_strings = 0,
+         do_you_have_new_data = "N",
+         remove_ensemble_correlations_greater_than = 0.80,
+         use_parallel = "Y",
+         train_amount = 0.50,
+         test_amount = 0.25,
+         validation_amount = 0.25)
+```
+
+Here are a few of the 25 plots which are all produced automatically are:
+
+Accuracy by model and resample
+
+Accuracy including train and holdout by model and resample
+
+![Accuracy including train and holdout by model and resample<br>](Accuracy_including_train_and_holdout_by_model_and_resample.png){width="700"}
+
+Boxplots of the numeric data
+
+![Boxplots of the numeric data](Boxplots_of_the_numeric_data.png){width="700"}
+
+Duration barchart
+
+![Duration barchart](Duration_barchart.png){width="700"}
+
+Model accuracy barchart
+
+![Model accuracy barchart](Model_accuracy_barchart.png){width="700"}
+
+Over or underfitting barchart
+
+![Over or underfitting barchart](Over_or_underfitting_barchart.png){width="700"}
+
+ROC curves
+
+![ROC curves](ROC_curves.png){width="700"}
+
+Target vs each predictor
+
+![Target vs each predictor](Target_vs_each_predictor.png){width="700"}
+
+# 24 summary tables (three are shown):
+
+![Logistic summary table](Logistic_summary_table.png)
+
+The function adds up each of the tables for each of the resamples. What this shows is there were zero false negatives or positives for the BayesRNN model when the data was randomly resampled 25 times.
+
+# Summary Report
+
+The function automatically creates a summary report which includes the following:
+
+Model name
+
+Accuracy
+
+True Positive Rate (also known as Sensitivity)
+
+True Negative Rate (also known as Specificity)
+
+False Positive Rate (also known as Type I Error)
+
+False Negative Rate (also known as Type II Error)
+
+Positive Predictive Value (also known as Precision)
+
+Negative Predictive Value
+
+F1 Score
+
+Area Under the Curve
+
+Overfitting Min
+
+Overfitting Mean
+
+Overfitting Max
+
+Duration
+
+# Finding the strongest predictor from the most accurate model(s)
+
+If the trained models are saved to the Environment, then the models may be used to find the strongest predictor. Not all models have this, but Random Forest does. In the case of Lebron model results, we would find the strongest predictors for Lebron as follows:
+
+```         
+rf_train_fit$importance
+```
+
+The result is:
+
+![Strongest predictors for Lebron making a basket](Lebron_strongest_predictors.png)
+
+# Grand Summary
+
+The LogisticEnsembles package was able to use the data about Lebron, split it into train, test and validation. From there it automatically built 23 individual models and 13 ensembles of models, which were randomly resampled 25 times. The function automatically returned 12 plots, a summary table for each model, and a summary report. We are able to identify the strongest predictors of Lebron making a basket from the most accurate models (in particular Random Forest).
