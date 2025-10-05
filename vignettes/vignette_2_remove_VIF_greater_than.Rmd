@@ -1,0 +1,19 @@
+---
+title: "vignette_2_remove_VIF_greater_than"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{vignette_2_remove_VIF_greater_than}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(LogisticEnsembles)
+```

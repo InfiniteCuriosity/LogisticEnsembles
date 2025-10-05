@@ -1,0 +1,19 @@
+---
+title: "vignette_4_save_all_trained_models_and_save_all_plots"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{vignette_4_save_all_trained_models_and_save_all_plots}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(LogisticEnsembles)
+```
