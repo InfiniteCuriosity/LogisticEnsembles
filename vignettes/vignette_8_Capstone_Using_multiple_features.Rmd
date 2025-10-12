@@ -1,0 +1,19 @@
+---
+title: "vignette_8_Capstone-Using_multiple_features"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{vignette_8_Capstone-Using_multiple_features}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(LogisticEnsembles)
+```
