@@ -1,4 +1,4 @@
-# LogisticEnsembles  0.8.1.9000, updated the number of models so it runs much faster without a loss in accuracy.
+# LogisticEnsembles  0.6.1
 
 # LogisticEnsembles 0.6.0
 
