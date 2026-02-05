@@ -9,11 +9,13 @@ Logistic(
   colnum,
   numresamples,
   remove_VIF_greater_than,
+  remove_data_correlations_greater_than,
   remove_ensemble_correlations_greater_than,
   save_all_trained_models = c("Y", "N"),
   save_all_plots = c("Y", "N"),
   set_seed = c("Y", "N"),
-  how_to_handle_strings = c("0", "1"),
+  how_to_handle_strings = c(0("none"), 1("factor levels"), 2("One-hot encoding"),
+    3("One-hot encoding with jitter")),
   do_you_have_new_data = c("Y", "N"),
   use_parallel = c("Y", "N"),
   train_amount,
@@ -29,6 +31,8 @@ Logistic(
 \item{numresamples}{the number of resamples}
 
 \item{remove_VIF_greater_than}{Removes features with VIGF value above the given amount (default = 5.00)}
+
+\item{remove_data_correlations_greater_than}{Enter a number to remove correlations in the initial data set (such as 0.98)}
 
 \item{remove_ensemble_correlations_greater_than}{Enter a number to remove correlations in the ensembles}
 
