@@ -79,3 +79,87 @@
 #'
 #' @source <https://www.kaggle.com/datasets/uciml/pima-indians-diabetes-database/data>
 "Diabetes"
+
+
+#' German_Credit_Risk-This dataset classifies people described by a set of attributes as good or bad credit risks.
+#' #'
+#' @description
+#' This data set originally came from Professor Hofmann, and is available in several locations, including the UCI Machine Learning Repository
+#' I cleaned the data set up, which included naming each of the columns, and removing white spaces from the names of the columns.
+#'
+#' @describe{
+#' The data set has 999 observations of 21 columns of data.The 21st column, "Class" is the target column in the data.
+#' Acknowledgements
+#' https://dutangc.github.io/CASdatasets/reference/credit.html
+#'
+#' \item{Attribute1}{Status of existing checking account}
+#' \item{Attribute2}{Duration (in months)}
+#' \item{Attribute3}{Credit history}
+#' \item{Attribute4}{Purpose}
+#' \item{Attribute5}{Credit amount}
+#' \item{Attribute6}{Savings accounts/bonds}
+#' \item{Attribute7}{Present employment since}
+#' \item{Attribute8}{Installment rate in percentage of disposable income}
+#' \item{Attribute9}{Personal status and sex}
+#' \item{Attribute10}{Other debtors / guarantors}
+#' \item{Attribute11}{Present residence since}
+#' \item{Attribute12}{Property}
+#' \item{Attribute13}{Age (in years)}
+#' \item{Attribute14}{Other installment plans}
+#' \item{Attribute15}{Housing}
+#' \item{Attribute16}{Number of existing credits at this bank}
+#' \item{Attribute17}{Job}
+#' \item{Attribute18}{Number of people being liable to provide maintenance for}
+#' \item{Attribute19}{Telephone}
+#' \item{Attribute20}{Foreign worker}
+#' \item{Class}{1 = Good, 0 = Bad}
+#' }
+#'
+#' @source https://archive.ics.uci.edu/dataset/144/statlog+german+credit+data
+"German_Credit_Risk"
+
+
+#' Cervical_cancer-This data set predicts a patient's risk of cervical cancer based on behavior reports
+#'
+#' @description "The dataset was collected at 'Hospital Universitario de Caracas' in Caracas, Venezuela. The dataset comprises demographic information, habits, and historic medical records of 858 patients.
+#' Several patients decided not to answer some of the questions because of privacy concerns (missing values)."
+#' I cleaned up the data so there are no missing data points, nor any NAs.
+#'
+#' @describe{
+#' This data set has 858 observations of 34 variables. The 34th column, 'Biopsy' is the target column.
+#'  \item{Age}{Age}
+#'  \item{Number.of.sexual.partners}{Number of reported sexual partners}
+#'  \item{First.sexual.intercourse}{Age at first sexual intercourse}
+#'  \item{Num.of.pregnancies}{Reported number of pregnancies}
+#'  \item{Smokes}{Whether the subject smokes}
+#'  \item{Smokes..years.}{The number of years the subject reported smoking}
+#'  \item{Smokes..packs.year.}{The number of packs of cigarettes the subject reports smoking each year}
+#'  \item{Hormonal.Contraceptives}{If the subject is using hormonal contraceptives}
+#'  \item{Hormonal.Contraceptives..years.}{Number of years the subject reports using hormonal contraceptives}
+#'  \item{IUD}{Does the subject use an IUD?}
+#'  \item{IUD..years.}{Number of years the subject reports using an IUD}
+#'  \item{STDs}{Does the patient have STDs?}
+#'  \item{STDs..number.}{Number of STDs}
+#'  \item{STDs.condylomatosis}{Does the patient have condylomatosis?}
+#'  \item{STDs.cervical.condylomatosis}{Does the patient have cervical condylomatosis?}
+#'  \item{STDs.vaginal.condylomatosis}{Does the patient have vaginal condylomatosis?}
+#'  \item{STDs.vulvo.perineal.condylomatosis}{Does the patient have vulvo perineal condylomatosis?}
+#'  \item{STDs.syphilis}{Does the patient have Syphilis?}
+#'  \item{STDs.pelvic.inflammatory.disease}{Does the patient have pelvic inflammatory disease?}
+#'  \item{STDs.genital.herpes}{Does the patient have genitial herpes?}
+#'  \item{STDs.molluscum.contagiosum}{Does the patient have molluscum contagiosum?}
+#'  \item{AIDS}{Does the patient have AIDS?}
+#'  \item{STDs.Hepatitis.B}{Does the patient have hepatitis B?}
+#'  \item{STDs..Number.of.diagnosis}{Number of diagnoses of STDs}
+#'  \item{Dx.Cancer}{Does the patient have a diagnosis of cancer?}
+#'  \item{Dx.CIN}{Does the patient have a diagnosis of CIN?}
+#'  \item{Dx.HPV}{Does the patient have a diagnosis of HPV?}
+#'  \item{Dx}{What is the patient's diagnosis?}
+#'  \item{Hinselmann}{Hinselmann}
+#'  \item{Schiller}{Schiller}
+#'  \item{Citology}{Citology}
+#'  \item{Biopsy}{The target column, 1 = yes, 0 = no}
+#'
+#' }
+#' @source https://archive.ics.uci.edu/dataset/383/cervical+cancer+risk+factors
+"Cervical_cancer"
