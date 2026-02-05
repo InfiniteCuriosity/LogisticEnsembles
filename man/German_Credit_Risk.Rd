@@ -17,5 +17,33 @@ German_Credit_Risk
 \description{
 This data set originally came from Professor Hofmann, and is available in several locations, including the UCI Machine Learning Repository
 I cleaned the data set up, which included naming each of the columns, and removing white spaces from the names of the columns.
+
+\describe{
+The data set has 999 observations of 21 columns of data.The 21st column, "Class" is the target column in the data.
+Acknowledgements
+https://dutangc.github.io/CASdatasets/reference/credit.html
+
+\item{Attribute1}{Status of existing checking account}
+\item{Attribute2}{Duration (in months)}
+\item{Attribute3}{Credit history}
+\item{Attribute4}{Purpose}
+\item{Attribute5}{Credit amount}
+\item{Attribute6}{Savings accounts/bonds}
+\item{Attribute7}{Present employment since}
+\item{Attribute8}{Installment rate in percentage of disposable income}
+\item{Attribute9}{Personal status and sex}
+\item{Attribute10}{Other debtors / guarantors}
+\item{Attribute11}{Present residence since}
+\item{Attribute12}{Property}
+\item{Attribute13}{Age (in years)}
+\item{Attribute14}{Other installment plans}
+\item{Attribute15}{Housing}
+\item{Attribute16}{Number of existing credits at this bank}
+\item{Attribute17}{Job}
+\item{Attribute18}{Number of people being liable to provide maintenance for}
+\item{Attribute19}{Telephone}
+\item{Attribute20}{Foreign worker}
+\item{Class}{1 = Good, 0 = Bad}
+}
 }
 \keyword{datasets}
