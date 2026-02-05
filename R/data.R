@@ -87,7 +87,7 @@
 #' This data set originally came from Professor Hofmann, and is available in several locations, including the UCI Machine Learning Repository
 #' I cleaned the data set up, which included naming each of the columns, and removing white spaces from the names of the columns.
 #'
-#' @describe{
+#' \describe{
 #' The data set has 999 observations of 21 columns of data.The 21st column, "Class" is the target column in the data.
 #' Acknowledgements
 #' https://dutangc.github.io/CASdatasets/reference/credit.html
@@ -125,7 +125,7 @@
 #' Several patients decided not to answer some of the questions because of privacy concerns (missing values)."
 #' I cleaned up the data so there are no missing data points, nor any NAs.
 #'
-#' @describe{
+#' \describe{
 #' This data set has 858 observations of 34 variables. The 34th column, 'Biopsy' is the target column.
 #'  \item{Age}{Age}
 #'  \item{Number.of.sexual.partners}{Number of reported sexual partners}
