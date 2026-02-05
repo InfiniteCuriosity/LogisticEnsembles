@@ -17,5 +17,42 @@ Cervical_cancer
 "The dataset was collected at 'Hospital Universitario de Caracas' in Caracas, Venezuela. The dataset comprises demographic information, habits, and historic medical records of 858 patients.
 Several patients decided not to answer some of the questions because of privacy concerns (missing values)."
 I cleaned up the data so there are no missing data points, nor any NAs.
+
+\describe{
+This data set has 858 observations of 34 variables. The 34th column, 'Biopsy' is the target column.
+ \item{Age}{Age}
+ \item{Number.of.sexual.partners}{Number of reported sexual partners}
+ \item{First.sexual.intercourse}{Age at first sexual intercourse}
+ \item{Num.of.pregnancies}{Reported number of pregnancies}
+ \item{Smokes}{Whether the subject smokes}
+ \item{Smokes..years.}{The number of years the subject reported smoking}
+ \item{Smokes..packs.year.}{The number of packs of cigarettes the subject reports smoking each year}
+ \item{Hormonal.Contraceptives}{If the subject is using hormonal contraceptives}
+ \item{Hormonal.Contraceptives..years.}{Number of years the subject reports using hormonal contraceptives}
+ \item{IUD}{Does the subject use an IUD?}
+ \item{IUD..years.}{Number of years the subject reports using an IUD}
+ \item{STDs}{Does the patient have STDs?}
+ \item{STDs..number.}{Number of STDs}
+ \item{STDs.condylomatosis}{Does the patient have condylomatosis?}
+ \item{STDs.cervical.condylomatosis}{Does the patient have cervical condylomatosis?}
+ \item{STDs.vaginal.condylomatosis}{Does the patient have vaginal condylomatosis?}
+ \item{STDs.vulvo.perineal.condylomatosis}{Does the patient have vulvo perineal condylomatosis?}
+ \item{STDs.syphilis}{Does the patient have Syphilis?}
+ \item{STDs.pelvic.inflammatory.disease}{Does the patient have pelvic inflammatory disease?}
+ \item{STDs.genital.herpes}{Does the patient have genitial herpes?}
+ \item{STDs.molluscum.contagiosum}{Does the patient have molluscum contagiosum?}
+ \item{AIDS}{Does the patient have AIDS?}
+ \item{STDs.Hepatitis.B}{Does the patient have hepatitis B?}
+ \item{STDs..Number.of.diagnosis}{Number of diagnoses of STDs}
+ \item{Dx.Cancer}{Does the patient have a diagnosis of cancer?}
+ \item{Dx.CIN}{Does the patient have a diagnosis of CIN?}
+ \item{Dx.HPV}{Does the patient have a diagnosis of HPV?}
+ \item{Dx}{What is the patient's diagnosis?}
+ \item{Hinselmann}{Hinselmann}
+ \item{Schiller}{Schiller}
+ \item{Citology}{Citology}
+ \item{Biopsy}{The target column, 1 = yes, 0 = no}
+
+}
 }
 \keyword{datasets}
