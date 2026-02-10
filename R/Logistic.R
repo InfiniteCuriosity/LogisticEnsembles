@@ -4588,7 +4588,7 @@ if (save_all_trained_models == "Y") {
 
 if(save_all_trained_models == "Y"){
   fil <- tempfile("ensemble_XGBoost_train_fit", fileext = ".RDS")
-  saveRDS(ensemble_xgbModel)
+  saveRDS(ensemble_xgbModel, fil)
 }
 
 #### Separators ####
