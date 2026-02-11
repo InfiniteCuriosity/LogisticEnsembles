@@ -4363,7 +4363,7 @@ overfitting_data <- data.frame(
     rep("Ensemble Bagging", numresamples),
     rep("Ensemble C50", numresamples),
     rep("Ensemble Support Vector Machines", numresamples),
-    rep("XGBoost", numresamples)
+    rep("Ensemble XGBoost", numresamples)
   ),
   "data" = c(
     bayesglm_holdout_overfitting, bayesrnn_holdout_overfitting, C50_holdout_overfitting, cubist_holdout_overfitting, fda_holdout_overfitting, gam_holdout_overfitting,
