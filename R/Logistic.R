@@ -1090,6 +1090,7 @@ for (i in 1:numresamples) {
   #### 01 BayesGLM ####
 
   bayesglm_start <- Sys.time()
+  message("Working on BayesGLM")
 
   if(set_seed == "Y"){
     set.seed(seed = seed)
@@ -1189,6 +1190,7 @@ for (i in 1:numresamples) {
   #### 02 BayesRNN ####
 
   bayesrnn_start <- Sys.time()
+  message("Working on BayesRNN")
 
   if(set_seed == "Y"){
     set.seed(seed = seed)
@@ -1290,6 +1292,7 @@ for (i in 1:numresamples) {
   #### 03 C50 ####
 
   C50_start <- Sys.time()
+  message("Working on C50")
 
   if(set_seed == "Y"){
     set.seed(seed = seed)
@@ -1387,6 +1390,7 @@ for (i in 1:numresamples) {
 
   #### 04 Cubist ####
   cubist_start <- Sys.time()
+  message("Working on Cubist")
 
   if(set_seed == "Y"){
     set.seed(seed = seed)
@@ -1486,6 +1490,7 @@ for (i in 1:numresamples) {
   #### 05 Flexible Discriminant Analysis ####
 
   fda_start <- Sys.time()
+  message("Working on Flexible Discriminant Analysis (FDA)")
 
   if(set_seed == "Y"){
     set.seed(seed = seed)
@@ -1584,6 +1589,7 @@ for (i in 1:numresamples) {
 
   #### 06 Generalized Additive Models ####
   gam_start <- Sys.time()
+  message("Working on Generalized Additive Models (GAM)")
 
   if(set_seed == "Y"){
     set.seed(seed = seed)
@@ -1685,6 +1691,7 @@ for (i in 1:numresamples) {
 
   #### 07 Generalized Linear Models ####
   glm_start <- Sys.time()
+  message("Working on Generalized Linear Models (GLM)")
 
   if(set_seed == "Y"){
     set.seed(seed = seed)
@@ -1786,6 +1793,7 @@ for (i in 1:numresamples) {
 
   #### 08 Linear ####
   linear_start <- Sys.time()
+  message("Working on Linear")
 
   if(set_seed == "Y"){
     set.seed(seed = seed)
@@ -1886,6 +1894,7 @@ for (i in 1:numresamples) {
 
   #### 09 Linear Discriminant Analysis ####
   lda_start <- Sys.time()
+  message("Working on Linear Discriminant Analysis (LDA)")
 
   if(set_seed == "Y"){
     set.seed(seed = seed)
@@ -1984,6 +1993,7 @@ for (i in 1:numresamples) {
 
   #### 10 Penalized Discriminant Analysis ####
   pda_start <- Sys.time()
+  message("Working on Penalized Discriminant Analysis (PDA)")
 
   if(set_seed == "Y"){
     set.seed(seed = seed)
@@ -2082,6 +2092,7 @@ for (i in 1:numresamples) {
 
   #### 11 Random Forest ####
   rf_start <- Sys.time()
+  message("Working on Random Forest")
 
   if(set_seed == "Y"){
     set.seed(seed = seed)
@@ -2180,6 +2191,7 @@ for (i in 1:numresamples) {
 
   #### 12. Support Vector Machines (SVM) ####
   svm_start <- Sys.time()
+  message("Working on Support Vector Machines (SVM)")
 
   if(set_seed == "Y"){
     set.seed(seed = seed)
@@ -2278,6 +2290,7 @@ for (i in 1:numresamples) {
 
   #### 13. Trees ####
   tree_start <- Sys.time()
+  message("Working on Trees")
 
   if(set_seed == "Y"){
     set.seed(seed = seed)
@@ -2378,6 +2391,7 @@ for (i in 1:numresamples) {
 
   #### 14 XGBoost ####
   xgb_start <- Sys.time()
+  message("Working on XGBoost")
 
   train_x = data.matrix(train[, 1 : ncol(train)])
   train_y = train[,ncol(train) : ncol(train)]
@@ -2595,6 +2609,7 @@ for (i in 1:numresamples) {
 
   #### 15. Ensemble Using Bagging ####
   ensemble_bagging_start <- Sys.time()
+  message("Working on Ensemble Bagging")
 
   if(set_seed == "Y"){
     set.seed(seed = seed)
@@ -2693,6 +2708,7 @@ for (i in 1:numresamples) {
 
   #### 16. Ensemble Using ensemble_C50 ####
   ensemble_C50_start <- Sys.time()
+  message("Working on Ensemble C50")
 
   if(set_seed == "Y"){
     set.seed(seed = seed)
@@ -2790,6 +2806,7 @@ for (i in 1:numresamples) {
 
   #### 17. Ensemble Using Support Vector Machines ####
   ensemble_svm_start <- Sys.time()
+  message("Working on Ensemble Using Suport Vector Machines (SVM)")
 
   if(set_seed == "Y"){
     set.seed(seed = seed)
@@ -2888,6 +2905,7 @@ for (i in 1:numresamples) {
 
   #### 18. Ensemble_XGBoost ####
   ensemble_xgb_start <- Sys.time()
+  message("Working on Ensembles using XGBoost (XGB)")
 
   ensemble_train_x = data.matrix(ensemble_train[, 1 : ncol(ensemble_train)])
   ensemble_train_y = ensemble_train[,ncol(ensemble_train) : ncol(ensemble_train)]
@@ -3104,7 +3122,7 @@ lda_ROC <- pROC::ggroc(lda_roc_obj, color = "steelblue", linewidth = 2) +
 pda_roc_obj <- pROC::roc(as.numeric(c(test01$y, validation01$y)), as.numeric(c(pda_test_pred, pda_validation_pred)))
 pda_auc <- round((pROC::auc(c(test01$y, validation01$y), as.numeric(c(pda_test_pred, pda_validation_pred)) - 1)), 4)
 pda_ROC <- pROC::ggroc(pda_roc_obj, color = "steelblue", linewidth = 2) +
-  ggplot2::ggtitle(paste0("Penalized Discriiminant Analysis ", "(AUC = ", pda_auc, ")")) +
+  ggplot2::ggtitle(paste0("Penalized Discriminant Analysis ", "(AUC = ", pda_auc, ")")) +
   ggplot2::labs(x = "Specificity", y = "Sensitivity") +
   ggplot2::annotate("segment", x = 1, xend = 0, y = 0, yend = 1, color = "grey")
 
@@ -4636,6 +4654,25 @@ plot_list <- lapply(1:(ncol(summary)-1), \(i) {
     ) +
     ggplot2::facet_grid(~Group.2)
 })
+
+if(save_all_plots == "Y" && device == "eps"){
+  ggplot2::ggsave("plot_list.eps", plot = plot_list, width = width, path = tempdir1, height = height, units = units, scale = scale, device = device, dpi = dpi)
+}
+if(save_all_plots == "Y" && device == "jpeg"){
+  ggplot2::ggsave("plot_list.jpeg", plot = plot_list, width = width, path = tempdir1, height = height, units = units, scale = scale, device = device, dpi = dpi)
+}
+if(save_all_plots == "Y" && device == "pdf"){
+  ggplot2::ggsave("plot_list.pdf", plot = plot_list, width = width, path = tempdir1, height = height, units = units, scale = scale, device = device, dpi = dpi)
+}
+if(save_all_plots == "Y" && device == "png"){
+  ggplot2::ggsave("plot_list.png", plot = plot_list, width = width, path = tempdir1, height = height, units = units, scale = scale, device = device, dpi = dpi)
+}
+if(save_all_plots == "Y" && device == "svg"){
+  ggplot2::ggsave("plot_list.svg", plot = plot_list, width = width, path = tempdir1, height = height, units = units, scale = scale, device = device, dpi = dpi)
+}
+if(save_all_plots == "Y" && device == "tiff"){
+  ggplot2::ggsave("plot_list.tiff", plot = plot_list, width = width, path = tempdir1, height = height, units = units, scale = scale, device = device, dpi = dpi)
+}
 
 #### Predicting on new data ####
 
