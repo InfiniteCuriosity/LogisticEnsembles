@@ -4628,7 +4628,7 @@ summary_list <- reactable::reactable(summary,
 )%>%
   reactablefmtr::add_title("Highest five percent and lowest five percent of the data")
 
-plot_list <- lapply(1:(ncol(summary)-1), \(i) {
+separators_plot_list <- lapply(1:(ncol(summary)-1), \(i) {
   df1 <- stats::aggregate(
     summary[, ncol(summary) - 1],
     by = list(summary[, i], summary$group), FUN = sum
@@ -4656,22 +4656,22 @@ plot_list <- lapply(1:(ncol(summary)-1), \(i) {
 })
 
 if(save_all_plots == "Y" && device == "eps"){
-  ggplot2::ggsave("plot_list.eps", plot = plot_list, width = width, path = tempdir1, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  ggplot2::ggsave("separators_plot_list.eps", plot = separators_plot_list, width = width, path = tempdir1, height = height, units = units, scale = scale, device = device, dpi = dpi)
 }
 if(save_all_plots == "Y" && device == "jpeg"){
-  ggplot2::ggsave("plot_list.jpeg", plot = plot_list, width = width, path = tempdir1, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  ggplot2::ggsave("separators_plot_list.jpeg", plot = separators_plot_list, width = width, path = tempdir1, height = height, units = units, scale = scale, device = device, dpi = dpi)
 }
 if(save_all_plots == "Y" && device == "pdf"){
-  ggplot2::ggsave("plot_list.pdf", plot = plot_list, width = width, path = tempdir1, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  ggplot2::ggsave("separators_plot_list.pdf", plot = separators_plot_list, width = width, path = tempdir1, height = height, units = units, scale = scale, device = device, dpi = dpi)
 }
 if(save_all_plots == "Y" && device == "png"){
-  ggplot2::ggsave("plot_list.png", plot = plot_list, width = width, path = tempdir1, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  ggplot2::ggsave("separators_plot_list.png", plot = separators_plot_list, width = width, path = tempdir1, height = height, units = units, scale = scale, device = device, dpi = dpi)
 }
 if(save_all_plots == "Y" && device == "svg"){
-  ggplot2::ggsave("plot_list.svg", plot = plot_list, width = width, path = tempdir1, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  ggplot2::ggsave("separators_plot_list.svg", plot = separators_plot_list, width = width, path = tempdir1, height = height, units = units, scale = scale, device = device, dpi = dpi)
 }
 if(save_all_plots == "Y" && device == "tiff"){
-  ggplot2::ggsave("plot_list.tiff", plot = plot_list, width = width, path = tempdir1, height = height, units = units, scale = scale, device = device, dpi = dpi)
+  ggplot2::ggsave("separators_plot_list.tiff", plot = separators_plot_list, width = width, path = tempdir1, height = height, units = units, scale = scale, device = device, dpi = dpi)
 }
 
 #### Predicting on new data ####
@@ -4761,7 +4761,7 @@ if (do_you_have_new_data == "Y") {
   )
 
   return(list(
-    "Separators" = plot_list, "Head_of_data" = head_df, "Summary_tables" = summary_tables, "accuracy_plot" = accuracy_plot, "total_plot_fixed_scales" = total_plot_fixed_scales, "total_plot_free_scales" = total_plot_free_scales,
+    "Separators" = separators_plot_list, "Head_of_data" = head_df, "Summary_tables" = summary_tables, "accuracy_plot" = accuracy_plot, "total_plot_fixed_scales" = total_plot_fixed_scales, "total_plot_free_scales" = total_plot_free_scales,
     "overfitting_fixed_scales" = overfitting_fixed_scales, "overfitting_free_scales" = overfitting_free_scales,
     "accuracy_barchart" = accuracy_barchart, "Duration_barchart" = duration_barchart, "Overfitting_barchart" = overfitting_barchart, "ROC_curves" = ROC_curves,
     "Boxplots" = boxplots, "Barchart" = barchart, "Correlation_table" = correlation_table,
@@ -4787,7 +4787,7 @@ summary_tables <- list(
 )
 
 return(list(
-  "Separators" = plot_list, "Head_of_data" = head_df, "Summary_tables" = summary_tables, "accuracy_plot_free_scales" = accuracy_plot_free_scales, "accuracy_plot_fixed_scales" = accuracy_plot_fixed_scales, "total_plot_fixed_scales" = total_plot_fixed_scales, "total_plot_free_scales" = total_plot_free_scales, "accuracy_barchart" = accuracy_barchart,
+  "Separators" = separators_plot_list, "Head_of_data" = head_df, "Summary_tables" = summary_tables, "accuracy_plot_free_scales" = accuracy_plot_free_scales, "accuracy_plot_fixed_scales" = accuracy_plot_fixed_scales, "total_plot_fixed_scales" = total_plot_fixed_scales, "total_plot_free_scales" = total_plot_free_scales, "accuracy_barchart" = accuracy_barchart,
   "overfitting_plot_fixed_scales" = overfitting_fixed_scales, "overfitting_plot_free_scales" = overfitting_free_scales, "Duration_barchart" = duration_barchart, "Overfitting_barchart" = overfitting_barchart, "ROC_curves" = ROC_curves,
   "Boxplots" = boxplots, "Barchart" = barchart, "Correlation_table" = correlation_table, 'VIF_results' = VIF_results,
   'True_positive_rate_fixed_scales' = true_positive_rate_fixed_scales, 'True_positive_rate_free_scales' = true_positive_rate_free_scales,
