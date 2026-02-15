@@ -17,6 +17,7 @@ Logistic(
   how_to_handle_strings = c(0("none"), 1("factor levels"), 2("One-hot encoding"),
     3("One-hot encoding with jitter")),
   do_you_have_new_data = c("Y", "N"),
+  stratified_column_number,
   use_parallel = c("Y", "N"),
   train_amount,
   test_amount,
@@ -45,6 +46,8 @@ Logistic(
 \item{how_to_handle_strings}{0: No strings, 1: Factor values}
 
 \item{do_you_have_new_data}{"Y" or "N". If "Y", then you will be asked for the new data}
+
+\item{stratified_column_number}{0 if no stratified random sampling, or column number for stratified random sampling}
 
 \item{use_parallel}{"Y" or "N" for parallel processing}
 
