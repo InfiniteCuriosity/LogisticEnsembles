@@ -4,7 +4,7 @@
 \name{LogisticEnsembles-package}
 \alias{LogisticEnsembles}
 \alias{LogisticEnsembles-package}
-\title{LogisticEnsembles: Automatically Runs 18 Logistic Models-14 individual logistic models and 4 ensembles of models}
+\title{LogisticEnsembles: Automatically Runs 18 Logistic Models-14 Individual Logistic Models and 4 Ensembles of Models}
 \description{
 Automatically returns results from 18 logistic models including 14 individual logistic models and 4 logistic ensembles of models. The package also returns 25 plots, 5 tables, and a summary report. The package automatically builds all 18 models, reports all results, and provides graphics to show how the models performed. This can be used for a wide range of data, such as sports or medical data. The package includes medical data (the Pima Indians data set), and information about the performance of Lebron James. The package can be used to analyze many other examples, such as stock market data. The package automatically returns many values for each model, such as True Positive Rate, True Negative Rate, False Positive Rate, False Negative Rate, Positive Predictive Value, Negative Predictive Value, F1 Score, Area Under the Curve. The package also returns 36 Receiver Operating Characteristic (ROC) curves for each of the 18 models.
 }
