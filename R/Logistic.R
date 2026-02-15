@@ -11,6 +11,7 @@
 #' @param remove_VIF_greater_than Removes features with VIGF value above the given amount (default = 5.00)
 #' @param remove_data_correlations_greater_than Enter a number to remove correlations in the initial data set (such as 0.98)
 #' @param remove_ensemble_correlations_greater_than Enter a number to remove correlations in the ensembles
+#' @param stratified_column_number 0 if no stratified random sampling, or column number for stratified random sampling
 #' @param use_parallel "Y" or "N" for parallel processing
 #' @param train_amount set the amount for the training data
 #' @param test_amount set the amount for the testing data
@@ -60,10 +61,11 @@
 #' @importFrom utils head read.csv str tail
 #' @importFrom xgboost xgb.DMatrix xgb.train
 
-#### The LogisticEnsembles function ####
+
+### The LogisticEnsembles function ####
 Logistic <- function(data, colnum, numresamples, remove_VIF_greater_than, remove_data_correlations_greater_than, remove_ensemble_correlations_greater_than,
                      save_all_trained_models = c("Y", "N"), save_all_plots = c("Y", "N"), set_seed = c("Y", "N"), how_to_handle_strings = c(0("none"), 1("factor levels"), 2("One-hot encoding"), 3("One-hot encoding with jitter")),
-                     do_you_have_new_data = c("Y", "N"),  use_parallel = c("Y", "N"),
+                     do_you_have_new_data = c("Y", "N"), stratified_column_number, use_parallel = c("Y", "N"),
                      train_amount, test_amount, validation_amount) {
 
 #### Initialize values ####
@@ -89,6 +91,11 @@ if(set_seed == "N"){
 
 if(set_seed == "Y"){
   seed = as.integer(readline("Which integer would you like to use for the seed? "))
+}
+
+#### Set up stratified random column (if the user selects to use it) ####
+if(stratified_column_number >0) {
+  levels <- levels(as.factor((df[, stratified_column_number]))) # gets the levels for stratified data
 }
 
 #### How to handle strings ####
@@ -935,6 +942,11 @@ remove_VIF_above <- 0
 mallows_cp <- 0
 Group.1 <- 0
 x <- 0
+train_ratio_df <- data.frame()
+test_ratio_df <- data.frame()
+validation_ratio_df <- data.frame()
+stratified_sampling_report <- 0
+section <- 0
 
 
 #### Barchart of the data against y ####
@@ -1046,6 +1058,39 @@ if(save_all_plots == "Y" && device == "svg"){
 }
 if(save_all_plots == "Y" && device == "tiff"){
   ggplot2::ggsave("histograms.tiff", width = width, path = tempdir1, height = height, units = units, scale = scale, device = device, dpi = dpi)
+}
+
+#### Create the stratified random sampling report ####
+if(stratified_column_number > 0){
+  df <- df[sample(nrow(df)),]
+  train <- as.data.frame(df %>% dplyr::group_by(colnames(df[, stratified_column_number])) %>% dplyr::sample_frac(train_amount))
+  train_ratio <- table(train[, stratified_column_number])/nrow(train)
+  train_ratio_df <- dplyr::bind_rows(train_ratio_df, train_ratio)
+  train_ratio_mean <- colMeans(train_ratio_df)
+
+  test <- as.data.frame(df %>% dplyr::group_by(colnames(df[, stratified_column_number])) %>% dplyr::sample_frac(test_amount))
+  test_ratio <- table(test[, stratified_column_number])/nrow(test)
+  test_ratio_df <- dplyr::bind_rows(test_ratio_df, test_ratio)
+  test_ratio_mean <- colMeans(test_ratio_df)
+
+  validation <- as.data.frame(df %>% dplyr::group_by(colnames(df[, stratified_column_number])) %>% dplyr::sample_frac(validation_amount))
+  validation_ratio <- table(validation[, stratified_column_number])/nrow(validation)
+  validation_ratio_df <- dplyr::bind_rows(validation_ratio_df, validation_ratio)
+  validation_ratio_mean <- colMeans(validation_ratio_df)
+
+  total_data_mean <- table(data[, stratified_column_number])/nrow(data)
+
+  df1 <- as.data.frame(rbind(total_data_mean, train_ratio_mean, test_ratio_mean, validation_ratio_mean))
+  df1$section <- c('whole data set', 'train ratios', 'test ratios', 'validation ratios')
+  df1 <- df1 %>% dplyr::relocate(section)
+  colnames(df1) <- c('Section', levels)
+
+  df1 <- data.frame(lapply(df1, function(x) if(is.numeric(x)) round(x, 4) else x))
+
+  stratified_sampling_report <- reactable::reactable(df1, searchable = TRUE, pagination = FALSE, wrap = TRUE, rownames = TRUE, fullWidth = TRUE, filterable = TRUE, bordered = TRUE,
+                                                     striped = TRUE, highlight = TRUE, resizable = TRUE
+  )%>%
+    reactablefmtr::add_title("Stratified Random Sampling Report")
 }
 
 
@@ -2539,7 +2584,7 @@ for (i in 1:numresamples) {
   xgb_duration_mean <- mean(xgb_duration)
 
 
-######################################## Ensembles start here ####################################################
+  ######################################## Ensembles start here ####################################################
 
   ensemble1 <- data.frame(
     "BayesGLM" = c(bayesglm_test_predictions, bayesglm_validation_predictions),
@@ -4787,19 +4832,20 @@ summary_tables <- list(
 )
 
 return(list(
-  "Separators" = separators_plot_list, "Head_of_data" = head_df, "Summary_tables" = summary_tables, "accuracy_plot_free_scales" = accuracy_plot_free_scales, "accuracy_plot_fixed_scales" = accuracy_plot_fixed_scales, "total_plot_fixed_scales" = total_plot_fixed_scales, "total_plot_free_scales" = total_plot_free_scales, "accuracy_barchart" = accuracy_barchart,
-  "overfitting_plot_fixed_scales" = overfitting_fixed_scales, "overfitting_plot_free_scales" = overfitting_free_scales, "Duration_barchart" = duration_barchart, "Overfitting_barchart" = overfitting_barchart, "ROC_curves" = ROC_curves,
-  "Boxplots" = boxplots, "Barchart" = barchart, "Correlation_table" = correlation_table, 'VIF_results' = VIF_results,
-  'True_positive_rate_fixed_scales' = true_positive_rate_fixed_scales, 'True_positive_rate_free_scales' = true_positive_rate_free_scales,
-  'True_negative_rate_fixed_scales' = true_negative_rate_fixed_scales, 'True_negative_rate_free_scales' = true_negative_rate_free_scales,
-  'False_positive_rate_fixed_scales' = false_positive_rate_fixed_scales, 'False_positive_rate_free_scales' = false_positive_rate_free_scales,
-  'False_negative_rate_fixed_scales' = false_negative_rate_fixed_scales, 'False_negative_rate_free_scales' = false_negative_rate_free_scales,
-  'F1_score_fixed_scales' = F1_score_fixed_scales, 'F1_score_free_scales' = F1_score_free_scales,
-  'Positive_predictive_value_fixed_scales' = positive_predictive_value_fixed_scales, 'Positive_predictive_value_free_scales' = positive_predictive_value_free_scales,
-  'Negative_predictive_value_fixed_scales' = negative_predictive_value_fixed_scales, 'Negative_predictive_value_free_scales' = negative_predictive_value_free_scales,
-  "Ensemble Correlation" = ensemble_correlation, "Ensemble_head" = head_ensemble,
-  "Data_Summary" = data_summary, "Holdout_results" = holdout_results_final,
-  "How_to_handle_strings" = how_to_handle_strings, "Train_amount" = train_amount, "Test_amount" = test_amount, "Validation_amount" = validation_amount
+  "Separators" = separators_plot_list, "Head of data" = head_df, "Summary tables" = summary_tables, "Accuracy plot free scales" = accuracy_plot_free_scales,
+  "Accuracy plot fixed scales" = accuracy_plot_fixed_scales, "Total plot fixed scales" = total_plot_fixed_scales, "Total plot free scales" = total_plot_free_scales, "Accuracy barchart" = accuracy_barchart,
+  "Overfitting plot fixed scales" = overfitting_fixed_scales, "Overfitting plot free scales" = overfitting_free_scales, "Duration barchart" = duration_barchart, "Overfitting barchart" = overfitting_barchart, "ROC curves" = ROC_curves,
+  "Boxplots" = boxplots, "Barchart" = barchart, "Correlation table" = correlation_table, 'VIF results' = VIF_results,
+  'True positive rate fixed scales' = true_positive_rate_fixed_scales, 'True positive rate free scales' = true_positive_rate_free_scales,
+  'True negative rate fixed scales' = true_negative_rate_fixed_scales, 'True negative rate free scales' = true_negative_rate_free_scales,
+  'False positive rate fixed scales' = false_positive_rate_fixed_scales, 'False positive rate free scales' = false_positive_rate_free_scales,
+  'False negative rate fixed scales' = false_negative_rate_fixed_scales, 'False negative rate free scales' = false_negative_rate_free_scales,
+  'F1 score fixed scales' = F1_score_fixed_scales, 'F1 score free scales' = F1_score_free_scales, "Stratified sampling report" = stratified_sampling_report,
+  'Positive predictive value fixed scales' = positive_predictive_value_fixed_scales, 'Positive predictive value free scales' = positive_predictive_value_free_scales,
+  'Negative predictive value fixed scales' = negative_predictive_value_fixed_scales, 'Negative predictive value free scales' = negative_predictive_value_free_scales,
+  "Ensemble Correlation" = ensemble_correlation, "Ensemble head" = head_ensemble,
+  "Data Summary" = data_summary, "Holdout results" = holdout_results_final,
+  "How to handle strings" = how_to_handle_strings, "Train amount" = train_amount, "Test amount" = test_amount, "Validation amount" = validation_amount
 )
 )
 }
