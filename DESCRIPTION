@@ -1,6 +1,6 @@
 Package: LogisticEnsembles
 Type: Package
-Title: Automatically Runs 18 Logistic Models-14 individual logistic models and 4 ensembles of models
+Title: Automatically Runs 18 Logistic Models-14 Individual Logistic Models and 4 Ensembles of Models
 Version: 1.0.0
 Authors@R: 
     person("Russ", "Conte", , "russconte@mac.com", role = c("aut", "cre", "cph"))
