@@ -20,7 +20,6 @@ This is a basic example which shows you how to solve a common problem:
 
 ``` r
 library(LogisticEnsembles)
-head(LogisticEnsembles::Lebron)
 start_time <- Sys.time()
 Logistic(data = Diabetes,
          colnum = 9,
@@ -33,6 +32,7 @@ Logistic(data = Diabetes,
          do_you_have_new_data = "N",
          remove_data_correlations_greater_than = 1.00,
          remove_ensemble_correlations_greater_than = 0.99,
+         stratified_column_number = 0,
          use_parallel = "Y",
          train_amount = 0.50,
          test_amount = 0.25,
