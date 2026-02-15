@@ -1,3 +1,6 @@
+# LogisitcEnsembles 0.9.0
+* Added stratified random sampling
+
 # LogisticEnsembles 0.8.6
 * Added German_Credit_Risk data set
 * Added extensive documentation to the Logistic function, so it's much easier to navigate through the code quickly.
