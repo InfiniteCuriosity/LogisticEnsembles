@@ -1,3 +1,6 @@
+# LogisticEnsembles 1.0.0
+* All features are now included and working great, this is version 1.0.0!
+
 # LogisitcEnsembles 0.9.0
 * Added stratified random sampling
 
