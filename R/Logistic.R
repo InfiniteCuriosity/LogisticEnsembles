@@ -4618,6 +4618,10 @@ if (save_all_trained_models == "Y") {
   saveRDS(pda_train_fit, fil)
 }
 
+if (save_all_trained_models == "Y") {
+  fil <- tempfile("rf_train_fit", fileext = ".RDS")
+  saveRDS(rf_train_fit, fil)
+}
 
 if (save_all_trained_models == "Y") {
   fil <- tempfile("svm_train_fit", fileext = ".RDS")
