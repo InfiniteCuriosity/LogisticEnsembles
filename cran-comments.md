@@ -20,3 +20,5 @@ therefore all the executable examples I've created take more than five seconds t
 
 * Update at 0.7.0, improved a number of the logistic formulas so they return more accurate results
 * Included Lasso and Ridge from GLMNET
+
+* 1.0.0, submitted to CRAN, all desired features are working, everything runs great.
