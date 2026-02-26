@@ -1,3 +1,5 @@
+# LogisticEnsembles 1.0.2
+
 # LogisticEnsemble 1.0.1
 * I recieved word today that the package reactablefmtr will be archived on 2026-03-17. I replaced the reactablefmtr functions using htmlwidgets and htmltools.
 
