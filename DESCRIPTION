@@ -1,7 +1,7 @@
 Package: LogisticEnsembles
 Type: Package
 Title: Automatically Runs 18 Logistic Models-14 Individual Logistic Models and 4 Ensembles of Models
-Version: 1.0.0
+Version: 1.0.1
 Authors@R: 
     person("Russ", "Conte", , "russconte@mac.com", role = c("aut", "cre", "cph"))
 Description: Automatically returns results from 18 logistic models including 14 individual logistic models and 4 logistic ensembles of models. The package also returns 25 plots, 5 tables, and a summary report. The package automatically
@@ -30,6 +30,8 @@ Depends:
     graphics,
     gridExtra,
     gt,
+    htmltools,
+    htmlwidgets,
     ipred,
     klaR,
     MachineShop,
@@ -44,7 +46,6 @@ Depends:
     randomForest,
     ranger,
     reactable,
-    reactablefmtr,
     readr,
     rpart,
     scales,
