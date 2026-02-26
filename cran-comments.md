@@ -22,3 +22,5 @@ therefore all the executable examples I've created take more than five seconds t
 * Included Lasso and Ridge from GLMNET
 
 * 1.0.0, submitted to CRAN, all desired features are working, everything runs great.
+
+* 1.0.1, received word that the package reactablefmtr will be archived on 2026-03-17, so I removed reactablefmtr, and replaced the code using htmlwidgets and htmltools.
