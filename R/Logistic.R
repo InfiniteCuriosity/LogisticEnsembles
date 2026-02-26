@@ -38,6 +38,8 @@
 #' @importFrom graphics hist panel.smooth par rect
 #' @importFrom gridExtra grid.arrange
 #' @importFrom gt gt
+#' @importFrom htmltools h2
+#' @importFrom htmlwidgets prependContent
 #' @importFrom ipred bagging
 #' @importFrom klaR rda
 #' @importFrom MachineShop fit
@@ -51,7 +53,6 @@
 #' @importFrom randomForest randomForest
 #' @importFrom ranger ranger
 #' @importFrom reactable reactable
-#' @importFrom reactablefmtr add_title
 #' @importFrom readr cols
 #' @importFrom rpart rpart
 #' @importFrom scales percent
@@ -60,7 +61,6 @@
 #' @importFrom tree tree
 #' @importFrom utils head read.csv str tail
 #' @importFrom xgboost xgb.DMatrix xgb.train
-
 
 ### The LogisticEnsembles function ####
 Logistic <- function(data, colnum, numresamples, remove_VIF_greater_than, remove_data_correlations_greater_than, remove_ensemble_correlations_greater_than,
@@ -153,8 +153,15 @@ for (i in 1:ncol(df)) {
 VIF_results <- reactable::reactable(as.data.frame(vif),
                                     searchable = TRUE, pagination = FALSE, wrap = TRUE, rownames = TRUE, fullWidth = TRUE, filterable = TRUE, bordered = TRUE,
                                     striped = TRUE, highlight = TRUE, resizable = TRUE
-)%>%
-  reactablefmtr::add_title("Variance Inflation Factor (VIF)")
+)
+
+htmltools::div(class = "table",
+               htmltools::div(class = "title", "VIF_results")
+)
+
+VIF_report <- htmlwidgets::prependContent(VIF_results, htmltools::h2(class = "title", "VIF results"))
+
+
 
 #### Getting new data (if the user has new data) ####
 
@@ -182,8 +189,13 @@ if(save_all_plots == "Y"){
 head_df <- reactable::reactable(head(df),
                                 searchable = TRUE, pagination = FALSE, wrap = TRUE, rownames = TRUE, fullWidth = TRUE, filterable = TRUE, bordered = TRUE,
                                 striped = TRUE, highlight = TRUE, resizable = TRUE
-)%>%
-  reactablefmtr::add_title("Head of the data frame")
+)
+
+htmltools::div(class = "table",
+               htmltools::div(class = "title", "head_df")
+)
+
+head_df <- htmlwidgets::prependContent(head_df, htmltools::h2(class = "title", "Head of the data frame"))
 
 
 #### Initialize values to 0, in alphabetical order ####
@@ -987,8 +999,13 @@ if(save_all_plots == "Y" && device == "tiff"){
 data_summary <- reactable::reactable(round(as.data.frame(do.call(cbind, lapply(df, summary))), 4),
                                      searchable = TRUE, pagination = FALSE, wrap = TRUE, rownames = TRUE, fullWidth = TRUE, filterable = TRUE, bordered = TRUE,
                                      striped = TRUE, highlight = TRUE, resizable = TRUE
-)%>%
-  reactablefmtr::add_title("Data summary")
+)
+
+htmltools::div(class = "table",
+               htmltools::div(class = "title", "data_summary")
+)
+
+data_summary <- htmlwidgets::prependContent(data_summary, htmltools::h2(class = "title", "Data summary"))
 
 
 #### Correlation plot of numeric data ####
@@ -1003,8 +1020,13 @@ corrplot::corrplot(M1, method = "circle", title = title, mar = c(0, 0, 1, 0)) # 
 correlation_table <- reactable::reactable(round(cor(df), 4),
                                           searchable = TRUE, pagination = FALSE, wrap = TRUE, rownames = TRUE, fullWidth = TRUE, filterable = TRUE, bordered = TRUE,
                                           striped = TRUE, highlight = TRUE, resizable = TRUE
-)%>%
-  reactablefmtr::add_title("Correlation of the data")
+)
+
+htmltools::div(class = "table",
+               htmltools::div(class = "title", "correlation_table")
+)
+
+correlation_table <- htmlwidgets::prependContent(correlation_table, htmltools::h2(class = "title", "Correlation table"))
 
 
 #### Boxplots of the numeric data ####
@@ -1089,8 +1111,14 @@ if(stratified_column_number > 0){
 
   stratified_sampling_report <- reactable::reactable(df1, searchable = TRUE, pagination = FALSE, wrap = TRUE, rownames = TRUE, fullWidth = TRUE, filterable = TRUE, bordered = TRUE,
                                                      striped = TRUE, highlight = TRUE, resizable = TRUE
-  )%>%
-    reactablefmtr::add_title("Stratified Random Sampling Report")
+  )
+
+  htmltools::div(class = "table",
+                 htmltools::div(class = "title", "stratified_sampling_report")
+  )
+
+  stratified_sampling_report <- htmlwidgets::prependContent(stratified_sampling_report, htmltools::h2(class = "title", "Stratified sampling report"))
+
 }
 
 
@@ -2620,14 +2648,24 @@ for (i in 1:numresamples) {
   head_ensemble <- reactable::reactable(round(head(ensemble1), 4),
                                         searchable = TRUE, pagination = FALSE, wrap = TRUE, rownames = TRUE, fullWidth = TRUE, filterable = TRUE, bordered = TRUE,
                                         striped = TRUE, highlight = TRUE, resizable = TRUE
-  )%>%
-    reactablefmtr::add_title("Head of the ensemble")
+  )
+
+  htmltools::div(class = "table",
+                 htmltools::div(class = "title", "head_ensemble")
+  )
+
+  head_ensemble <- htmlwidgets::prependContent(head_ensemble, htmltools::h2(class = "title", "Head of ensemble"))
 
   ensemble_correlation <- reactable::reactable(round(cor(ensemble1), 4),
                                                searchable = TRUE, pagination = FALSE, wrap = TRUE, rownames = TRUE, fullWidth = TRUE, filterable = TRUE, bordered = TRUE,
                                                striped = TRUE, highlight = TRUE, resizable = TRUE
-  )%>%
-    reactablefmtr::add_title("Correlation of the ensemble")
+  )
+
+  htmltools::div(class = "table",
+                 htmltools::div(class = "title", "ensemble_correlation")
+  )
+
+  ensemble_correlation <- htmlwidgets::prependContent(ensemble_correlation, htmltools::h2(class = "title", "Ensemble correlation"))
 
   if(set_seed == "N"){
     ensemble_index <- sample(c(1:3), nrow(ensemble1), replace = TRUE, prob = c(train_amount, test_amount, validation_amount))
@@ -3425,8 +3463,14 @@ holdout_results <- holdout_results %>% dplyr::arrange(dplyr::desc(Accuracy))
 holdout_results_final <- reactable::reactable(holdout_results,
                                               searchable = TRUE, pagination = FALSE, wrap = TRUE, rownames = TRUE, fullWidth = TRUE, filterable = TRUE, bordered = TRUE,
                                               striped = TRUE, highlight = TRUE, resizable = TRUE
-) %>%
-  reactablefmtr::add_title("Mean of Holdout results")
+)
+
+htmltools::div(class = "table",
+               htmltools::div(class = "title", "holdout_results_final")
+)
+
+holdout_results_final <- htmlwidgets::prependContent(holdout_results_final, htmltools::h2(class = "title", "Holdout results"))
+
 
 #### Accuracy data and plots start here ####
 
@@ -4674,8 +4718,14 @@ summary <- summary %>% dplyr::mutate_if(is.numeric, round, digits = 0)
 summary_list <- reactable::reactable(summary,
                                      searchable = TRUE, pagination = FALSE, wrap = TRUE, rownames = TRUE, fullWidth = TRUE, filterable = TRUE, bordered = TRUE,
                                      striped = TRUE, highlight = TRUE, resizable = TRUE
-)%>%
-  reactablefmtr::add_title("Highest five percent and lowest five percent of the data")
+)
+
+htmltools::div(class = "table",
+               htmltools::div(class = "title", "summary_list")
+)
+
+summary_list <- htmlwidgets::prependContent(summary_list, htmltools::h2(class = "title", "Highest 5% and lowest 5%"))
+
 
 separators_plot_list <- lapply(1:(ncol(summary)-1), \(i) {
   df1 <- stats::aggregate(
@@ -4792,8 +4842,13 @@ if (do_you_have_new_data == "Y") {
   new_data_results <- reactable::reactable(new_data_results,
                                            searchable = TRUE, pagination = FALSE, wrap = TRUE, rownames = TRUE, fullWidth = TRUE, filterable = TRUE, bordered = TRUE,
                                            striped = TRUE, highlight = TRUE, resizable = TRUE
-  ) %>%
-    reactablefmtr::add_title("New data results")
+  )
+
+  htmltools::div(class = "table",
+                 htmltools::div(class = "title", "new_data_results")
+  )
+
+  new_data_results <- htmlwidgets::prependContent(new_data_results, htmltools::h2(class = "title", "New data results"))
 
   #### Summary tables for new data ####
 
@@ -4839,7 +4894,7 @@ return(list(
   "Separators" = separators_plot_list, "Head of data" = head_df, "Summary tables" = summary_tables, "Accuracy plot free scales" = accuracy_plot_free_scales,
   "Accuracy plot fixed scales" = accuracy_plot_fixed_scales, "Total plot fixed scales" = total_plot_fixed_scales, "Total plot free scales" = total_plot_free_scales, "Accuracy barchart" = accuracy_barchart,
   "Overfitting plot fixed scales" = overfitting_fixed_scales, "Overfitting plot free scales" = overfitting_free_scales, "Duration barchart" = duration_barchart, "Overfitting barchart" = overfitting_barchart, "ROC curves" = ROC_curves,
-  "Boxplots" = boxplots, "Barchart" = barchart, "Correlation table" = correlation_table, 'VIF results' = VIF_results,
+  "Boxplots" = boxplots, "Barchart" = barchart, "Correlation table" = correlation_table, 'VIF results' = VIF_report,
   'True positive rate fixed scales' = true_positive_rate_fixed_scales, 'True positive rate free scales' = true_positive_rate_free_scales,
   'True negative rate fixed scales' = true_negative_rate_fixed_scales, 'True negative rate free scales' = true_negative_rate_free_scales,
   'False positive rate fixed scales' = false_positive_rate_fixed_scales, 'False positive rate free scales' = false_positive_rate_free_scales,
