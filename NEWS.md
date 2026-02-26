@@ -1,3 +1,5 @@
+# LogisticEnsembles (development version)
+
 # LogisticEnsembles 1.0.2
 
 # LogisticEnsemble 1.0.1
