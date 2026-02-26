@@ -37,6 +37,8 @@ Logistic(data = Lebron,
          set_seed = "N",
          how_to_handle_strings = 0,
          do_you_have_new_data = "N",
+         stratified_column_number = 0,
+         remove_data_correlations_greater_than = 0.00,
          remove_ensemble_correlations_greater_than = 0.80,
          use_parallel = "Y",
          train_amount = 0.50,
@@ -48,7 +50,7 @@ Logistic(data = Lebron,
 
 The goal of LogisticEnsembles is to automatically conduct a thorough analysis of data which includes logistic data. The user only needs to provide the data and answer a few questions, such as which column is the target column, and LogisticEnsembles will do all the rest.
 
-LogisticEnsembles builds 24 individual logistic models. It does this by building a model, and then converting the results into a probability between 0 and 1. The function then makes predictions. If the probability is \>0.5, it assigns a result of 1, otherwise 0.
+LogisticEnsembles builds 24 individual logistic models. It does this by building a model, and then converting the results into a probability between 0 and 1. The function then makes predictions. If the probability is =>0.5, it assigns a result of 1, otherwise 0.
 
 One of the many results that are returned are ROC curves for all 24 models. Specificity is on the x-axis and sensitivity on the y-axis. Here are nine of the 24 total ROC curves automatically provided by the function:
 
@@ -106,6 +108,8 @@ Logistic(data = Lebron,
          set_seed = "N",
          how_to_handle_strings = 0,
          do_you_have_new_data = "N",
+         stratified_column_number = 0,
+         remove_data_correlations_greater_than = 0.00,
          remove_ensemble_correlations_greater_than = 0.80,
          use_parallel = "Y",
          train_amount = 0.50,
