@@ -18,7 +18,6 @@ Depends:
     car,
     caret,
     corrplot,
-    Cubist,
     doParallel,
     dplyr,
     e1071,
@@ -36,8 +35,9 @@ Depends:
     klaR,
     MachineShop,
     magrittr,
-    MASS,
     mda,
+    nnet,
+    olsrr,
     parallel,
     pls,
     pROC,
@@ -51,8 +51,8 @@ Depends:
     scales,
     stats,
     tidyr,
-    tree,
     utils,
+    vip,
     xgboost
 Encoding: UTF-8
 LazyData: true
