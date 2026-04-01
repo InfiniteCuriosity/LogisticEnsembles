@@ -8,6 +8,7 @@ Logistic(
   data,
   colnum,
   numresamples,
+  positive_rate,
   remove_VIF_greater_than,
   remove_data_correlations_greater_than,
   remove_ensemble_correlations_greater_than,
@@ -31,11 +32,13 @@ Logistic(
 
 \item{numresamples}{the number of resamples}
 
+\item{positive_rate}{rate of 1 to 0 in the data set (default = 0.5)}
+
 \item{remove_VIF_greater_than}{Removes features with VIGF value above the given amount (default = 5.00)}
 
-\item{remove_data_correlations_greater_than}{Enter a number to remove correlations in the initial data set (such as 0.98)}
+\item{remove_data_correlations_greater_than}{Enter a number to remove correlations in the initial data set (such as 0.99)}
 
-\item{remove_ensemble_correlations_greater_than}{Enter a number to remove correlations in the ensembles}
+\item{remove_ensemble_correlations_greater_than}{Enter a number to remove correlations in the ensemble data set (such as 0.99)}
 
 \item{save_all_trained_models}{"Y" or "N". Places all the trained models in the Environment}
 
